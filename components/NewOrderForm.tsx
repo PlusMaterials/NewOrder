@@ -231,26 +231,26 @@ export default function NewOrderForm() {
 
         <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
 
-          {/* Buying Manager */}
+          {/* Buyer */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Buying Manager <span className="text-red-500">*</span>
+              Buyer <span className="text-red-500">*</span>
             </label>
             <select name="buyingManager" value={form.buyingManager} onChange={handleChange} required className={inputCls}>
-              <option value="">Select buying manager</option>
+              <option value="">Select buyer</option>
               {TEAM_MEMBERS.map((m) => (
                 <option key={m.email} value={m.email}>{m.name}</option>
               ))}
             </select>
           </div>
 
-          {/* Sales Representative */}
+          {/* Sales Rep */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Sales Representative <span className="text-red-500">*</span>
+              Sales Rep <span className="text-red-500">*</span>
             </label>
             <select name="salesRepresentative" value={form.salesRepresentative} onChange={handleChange} required className={inputCls}>
-              <option value="">Select sales representative</option>
+              <option value="">Select sales rep</option>
               {TEAM_MEMBERS.map((m) => (
                 <option key={m.email} value={m.email}>{m.name}</option>
               ))}
@@ -361,14 +361,14 @@ export default function NewOrderForm() {
 
           {/* Place of Loading */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Place of Loading (FOB Location)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Place of Loading</label>
             <input type="text" name="placeOfLoading" value={form.placeOfLoading} onChange={handleChange} placeholder="Enter FOB location" className={inputCls} />
           </div>
 
           {/* Port / Ramp */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">PORT / RAMP of Loading</label>
-            <input type="text" name="portRamp" value={form.portRamp} onChange={handleChange} placeholder="Enter port or ramp" className={inputCls} />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Export Port / Ramp</label>
+            <input type="text" name="portRamp" value={form.portRamp} onChange={handleChange} placeholder="Enter export port or ramp" className={inputCls} />
           </div>
 
           {/* Product / Grade */}
@@ -382,12 +382,12 @@ export default function NewOrderForm() {
             </select>
           </div>
 
-          {/* PO Items */}
+          {/* Purchase Order Items */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              PO Items <span className="text-red-500">*</span>
+              Purchase Order Items <span className="text-red-500">*</span>
             </label>
-            <input type="text" name="poItems" value={form.poItems} onChange={handleChange} required placeholder="Enter PO items" className={inputCls} />
+            <input type="text" name="poItems" value={form.poItems} onChange={handleChange} required placeholder="Enter purchase order items" className={inputCls} />
           </div>
 
           {/* Pricing */}
@@ -404,9 +404,9 @@ export default function NewOrderForm() {
             <input type="text" name="minimumLoadingWeight" value={form.minimumLoadingWeight} onChange={handleChange} required placeholder="e.g. 20 MT" className={inputCls} />
           </div>
 
-          {/* PO Shipping Terms */}
+          {/* Purchase Order Shipping Terms */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">PO Shipping Terms</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Order Shipping Terms</label>
             <select name="poShippingTerms" value={form.poShippingTerms} onChange={handleChange} className={inputCls}>
               <option value="">Select shipping terms</option>
               {SHIPPING_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -427,10 +427,10 @@ export default function NewOrderForm() {
             <input type="text" name="icd" value={form.icd} onChange={handleChange} placeholder="Enter ICD" className={inputCls} />
           </div>
 
-          {/* Container Quantity */}
+          {/* Container / Load Quantity */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Container Quantity <span className="text-red-500">*</span>
+              Container / Load Quantity <span className="text-red-500">*</span>
             </label>
             <input type="text" name="containerQuantity" value={form.containerQuantity} onChange={handleChange} required placeholder="e.g. 5x40HC" className={inputCls} />
           </div>
@@ -440,7 +440,7 @@ export default function NewOrderForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Target Ship Date <span className="text-red-500">*</span>
             </label>
-            <input type="date" name="targetShipDate" value={form.targetShipDate} onChange={handleChange} required className={inputCls} />
+            <input type="date" name="targetShipDate" value={form.targetShipDate} onChange={handleChange} className={inputCls} />
           </div>
 
           {/* Customer */}
@@ -454,21 +454,21 @@ export default function NewOrderForm() {
 
           <hr className="border-gray-100" />
 
-          {/* SO Description */}
+          {/* Sales Order Description */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">SO Description</label>
-            <input type="text" name="soDescription" value={form.soDescription} onChange={handleChange} placeholder="Enter SO description" className={inputCls} />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Description</label>
+            <input type="text" name="soDescription" value={form.soDescription} onChange={handleChange} placeholder="Enter sales order description" className={inputCls} />
           </div>
 
-          {/* SO Price */}
+          {/* Sales Order Price */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">SO Price</label>
-            <input type="text" name="soPrice" value={form.soPrice} onChange={handleChange} placeholder="Enter SO price" className={inputCls} />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Price</label>
+            <input type="text" name="soPrice" value={form.soPrice} onChange={handleChange} placeholder="Enter sales order price" className={inputCls} />
           </div>
 
-          {/* SO QTY */}
+          {/* Sales Order QTY */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">SO QTY (Weights in MT)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order QTY (Weights in MT)</label>
             <input type="text" name="soQty" value={form.soQty} onChange={handleChange} placeholder="e.g. 100 MT" className={inputCls} />
           </div>
 

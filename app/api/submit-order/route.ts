@@ -7,29 +7,29 @@ const SHEET_HEADERS = [
   "Timestamp",
   "Tracking #",
   "Order #",
-  "Buying Manager",
-  "Sales Representative",
+  "Buyer",
+  "Sales Rep",
   "Secondary Account Managers",
   "Logistics Manager",
   "Department",
   "Vendor",
-  "Place of Loading (FOB)",
-  "Port / Ramp of Loading",
+  "Place of Loading",
+  "Export Port / Ramp",
   "Product / Grade",
-  "PO Items",
+  "Purchase Order Items",
   "Pricing",
   "Customer Booking",
   "Customer PO",
   "Min Loading Weight",
-  "PO Shipping Terms",
+  "Purchase Order Shipping Terms",
   "Final Destination",
   "ICD",
-  "Container Quantity",
+  "Container / Load Quantity",
   "Target Ship Date",
   "Customer",
-  "SO Description",
-  "SO Price",
-  "SO QTY (MT)",
+  "Sales Order Description",
+  "Sales Order Price",
+  "Sales Order QTY (MT)",
   "Payment Terms",
   "Additional Notes",
   "Pictures",
@@ -184,8 +184,8 @@ function buildEmailHtml(
     <div style="padding:24px 32px">
       <table style="width:100%;border-collapse:collapse;font-size:14px">
         <tbody>
-          ${row("Buying Manager", displayName(fields.buyingManager))}
-          ${row("Sales Representative", displayName(fields.salesRepresentative))}
+          ${row("Buyer", displayName(fields.buyingManager))}
+          ${row("Sales Rep", displayName(fields.salesRepresentative))}
           ${row("Secondary Acct. Manager", fields.secondaryAccountManagers?.split(", ").map(displayName).join(", ") || "")}
           ${row("Logistics Manager", fields.logisticsManager === "other"
             ? `${fields.logisticsManagerOtherName} &lt;${fields.logisticsManagerOtherEmail}&gt;`
@@ -194,23 +194,23 @@ function buildEmailHtml(
           <tr><td colspan="2" style="padding:4px 0"><hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"></td></tr>
           ${row("Vendor", fields.vendor)}
           ${row("Place of Loading", fields.placeOfLoading)}
-          ${row("Port / Ramp", fields.portRamp)}
+          ${row("Export Port / Ramp", fields.portRamp)}
           ${row("Product / Grade", fields.productGrade)}
-          ${row("PO Items", fields.poItems)}
+          ${row("Purchase Order Items", fields.poItems)}
           ${row("Pricing", fields.pricing)}
           ${linkRow("Customer Booking", fileLinks.customerBooking)}
           ${linkRow("Customer PO", fileLinks.customerPO)}
           ${row("Min Loading Weight", fields.minimumLoadingWeight)}
-          ${row("PO Shipping Terms", fields.poShippingTerms)}
+          ${row("Purchase Order Shipping Terms", fields.poShippingTerms)}
           ${row("Final Destination", fields.finalDestination)}
           ${row("ICD", fields.icd)}
-          ${row("Container Quantity", fields.containerQuantity)}
+          ${row("Container / Load Quantity", fields.containerQuantity)}
           ${row("Target Ship Date", fields.targetShipDate)}
           ${row("Customer", fields.customer)}
           <tr><td colspan="2" style="padding:4px 0"><hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"></td></tr>
-          ${row("SO Description", fields.soDescription)}
-          ${row("SO Price", fields.soPrice)}
-          ${row("SO QTY (MT)", fields.soQty)}
+          ${row("Sales Order Description", fields.soDescription)}
+          ${row("Sales Order Price", fields.soPrice)}
+          ${row("Sales Order QTY (MT)", fields.soQty)}
           ${row("Payment Terms", fields.paymentTerms)}
           ${row("Additional Notes", fields.additionalNotes)}
           ${fileLinks.pictures ? `<tr><td style="padding:8px 12px;font-weight:600;color:#374151;vertical-align:top">Pictures</td><td style="padding:8px 12px">${fileLinks.pictures.split(", ").map((url, i) => `<a href="${url}" style="color:#2563eb">Image ${i + 1}</a>`).join(" &nbsp; ")}</td></tr>` : ""}
