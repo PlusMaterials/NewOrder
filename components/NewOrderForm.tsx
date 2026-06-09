@@ -109,6 +109,7 @@ export default function NewOrderForm() {
   const [form, setForm] = useState<FormState>(initial);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [trackingNumber, setTrackingNumber] = useState<number | null>(null);
   const customerBookingRef = useRef<HTMLInputElement>(null);
   const customerPORef = useRef<HTMLInputElement>(null);
   const picturesRef = useRef<HTMLInputElement>(null);
@@ -176,6 +177,8 @@ export default function NewOrderForm() {
         throw new Error(data.error || "Submission failed");
       }
 
+      const data = await res.json();
+      setTrackingNumber(data.trackingNumber ?? null);
       setStatus("success");
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Something went wrong");
@@ -187,6 +190,7 @@ export default function NewOrderForm() {
     setForm(initial);
     setStatus("idle");
     setErrorMsg("");
+    setTrackingNumber(null);
     if (customerBookingRef.current) customerBookingRef.current.value = "";
     if (customerPORef.current) customerPORef.current.value = "";
     if (picturesRef.current) picturesRef.current.value = "";
@@ -201,6 +205,9 @@ export default function NewOrderForm() {
           </svg>
         </div>
         <h2 className="text-2xl font-semibold text-gray-800 mb-2">Order Submitted</h2>
+        {trackingNumber && (
+          <p className="text-blue-600 font-semibold text-lg mb-1">Tracking #{trackingNumber}</p>
+        )}
         <p className="text-gray-500 mb-6">Your order has been saved and a confirmation email has been sent.</p>
         <button
           onClick={handleReset}

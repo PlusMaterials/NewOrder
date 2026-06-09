@@ -4,6 +4,8 @@ import nodemailer from "nodemailer";
 import { Readable } from "stream";
 
 const SHEET_HEADERS = [
+  "Tracking #",
+  "Order #",
   "Timestamp",
   "Buying Manager",
   "Sales Representative",
@@ -33,7 +35,6 @@ const SHEET_HEADERS = [
   "Pictures",
 ];
 
-// Name lookup for display in emails
 const NAME_MAP: Record<string, string> = {
   "murad@plusmaterials.com": "Murad",
   "zoeb@plusmaterials.com": "Zoeb",
@@ -64,6 +65,41 @@ function getAuth() {
   });
 }
 
+async function getNextTrackingNumber(auth: ReturnType<typeof getAuth>): Promise<number> {
+  const sheets = google.sheets({ version: "v4", auth });
+  const sheetId = process.env.GOOGLE_SHEET_ID!;
+
+  const res = await sheets.spreadsheets.values.get({
+    spreadsheetId: sheetId,
+    range: "Sheet1!A:A",
+  });
+
+  const rows = res.data.values ?? [];
+  // rows[0] is the header, so data rows start at index 1
+  const dataRowCount = Math.max(0, rows.length - 1);
+  return 1001 + dataRowCount;
+}
+
+async function createDriveFolder(
+  auth: ReturnType<typeof getAuth>,
+  name: string,
+  parentFolderId: string
+): Promise<string> {
+  const drive = google.drive({ version: "v3", auth });
+
+  const res = await drive.files.create({
+    supportsAllDrives: true,
+    requestBody: {
+      name,
+      mimeType: "application/vnd.google-apps.folder",
+      parents: [parentFolderId],
+    },
+    fields: "id",
+  });
+
+  return res.data.id!;
+}
+
 async function uploadFileToDrive(
   auth: ReturnType<typeof getAuth>,
   file: File,
@@ -74,7 +110,6 @@ async function uploadFileToDrive(
   const stream = Readable.from(buffer);
 
   const res = await drive.files.create({
-    // supportsAllDrives is required for Shared Drive uploads
     supportsAllDrives: true,
     requestBody: { name: file.name, parents: [folderId] },
     media: { mimeType: file.type || "application/octet-stream", body: stream },
@@ -110,13 +145,17 @@ async function appendToSheet(auth: ReturnType<typeof getAuth>, row: string[]) {
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: sheetId,
-    range: "Sheet1!A:Z",
+    range: "Sheet1!A:AC",
     valueInputOption: "RAW",
     requestBody: { values: [row] },
   });
 }
 
-function buildEmailHtml(fields: Record<string, string>, fileLinks: Record<string, string>) {
+function buildEmailHtml(
+  trackingNumber: number,
+  fields: Record<string, string>,
+  fileLinks: Record<string, string>
+) {
   const row = (label: string, value: string) =>
     value
       ? `<tr><td style="padding:8px 12px;font-weight:600;color:#374151;white-space:nowrap;vertical-align:top;width:200px">${label}</td><td style="padding:8px 12px;color:#111827">${value}</td></tr>`
@@ -136,6 +175,11 @@ function buildEmailHtml(fields: Record<string, string>, fileLinks: Record<string
     <div style="background:#2563eb;padding:24px 32px">
       <h1 style="color:#fff;margin:0;font-size:20px">New Order Submission</h1>
       <p style="color:#bfdbfe;margin:4px 0 0;font-size:13px">Plus Materials — ${new Date().toLocaleString()}</p>
+    </div>
+    <div style="background:#eff6ff;padding:12px 32px;border-bottom:1px solid #dbeafe">
+      <p style="margin:0;font-size:14px;color:#1e40af">
+        <strong>Tracking #${trackingNumber}</strong> &nbsp;·&nbsp; Order # to be assigned
+      </p>
     </div>
     <div style="padding:24px 32px">
       <table style="width:100%;border-collapse:collapse;font-size:14px">
@@ -185,6 +229,7 @@ interface FileAttachment {
 }
 
 async function sendEmail(
+  trackingNumber: number,
   fields: Record<string, string>,
   fileLinks: Record<string, string>,
   attachments: FileAttachment[]
@@ -200,8 +245,8 @@ async function sendEmail(
   await transporter.sendMail({
     from: `"Plus Materials Orders" <${process.env.EMAIL_USER}>`,
     to: "zoeb@plusmaterials.com",
-    subject: `New Order — ${fields.vendor || "Unknown Vendor"} · ${fields.department || ""}`,
-    html: buildEmailHtml(fields, fileLinks),
+    subject: `[#${trackingNumber}] New Order — ${fields.vendor || "Unknown Vendor"} · ${fields.department || ""}`,
+    html: buildEmailHtml(trackingNumber, fields, fileLinks),
     attachments: attachments.map((a) => ({
       filename: a.filename,
       content: a.content,
@@ -244,7 +289,17 @@ export async function POST(request: NextRequest) {
     };
 
     const auth = getAuth();
-    const folderId = process.env.GOOGLE_DRIVE_FOLDER_ID!;
+    const rootFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID!;
+
+    // Assign tracking number first so the Drive folder name matches
+    const trackingNumber = await getNextTrackingNumber(auth);
+
+    // Create a subfolder for this order's attachments
+    const orderFolderId = await createDriveFolder(
+      auth,
+      `#${trackingNumber} — ${fields.vendor || "Order"}`,
+      rootFolderId
+    );
 
     const customerBookingFile = formData.get("customerBooking") as File | null;
     const customerPOFile = formData.get("customerPO") as File | null;
@@ -258,18 +313,18 @@ export async function POST(request: NextRequest) {
     if (customerBookingFile?.size) {
       const buf = Buffer.from(await customerBookingFile.arrayBuffer());
       attachments.push({ filename: customerBookingFile.name, content: buf, contentType: customerBookingFile.type || "application/octet-stream" });
-      customerBookingLink = await uploadFileToDrive(auth, customerBookingFile, folderId);
+      customerBookingLink = await uploadFileToDrive(auth, customerBookingFile, orderFolderId);
     }
     if (customerPOFile?.size) {
       const buf = Buffer.from(await customerPOFile.arrayBuffer());
       attachments.push({ filename: customerPOFile.name, content: buf, contentType: customerPOFile.type || "application/octet-stream" });
-      customerPOLink = await uploadFileToDrive(auth, customerPOFile, folderId);
+      customerPOLink = await uploadFileToDrive(auth, customerPOFile, orderFolderId);
     }
     for (const pic of pictureFiles) {
       if (pic.size) {
         const buf = Buffer.from(await pic.arrayBuffer());
         attachments.push({ filename: pic.name, content: buf, contentType: pic.type || "image/jpeg" });
-        picLinks.push(await uploadFileToDrive(auth, pic, folderId));
+        picLinks.push(await uploadFileToDrive(auth, pic, orderFolderId));
       }
     }
 
@@ -285,6 +340,8 @@ export async function POST(request: NextRequest) {
         : displayName(fields.logisticsManager);
 
     const row = [
+      String(trackingNumber),
+      "", // Order # — left blank for the team to fill in
       new Date().toISOString(),
       displayName(fields.buyingManager),
       displayName(fields.salesRepresentative),
@@ -315,9 +372,9 @@ export async function POST(request: NextRequest) {
     ];
 
     await appendToSheet(auth, row);
-    await sendEmail(fields, fileLinks, attachments);
+    await sendEmail(trackingNumber, fields, fileLinks, attachments);
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({ success: true, trackingNumber });
   } catch (err) {
     console.error("Order submission error:", err);
     return NextResponse.json({ error: "Failed to submit order" }, { status: 500 });
