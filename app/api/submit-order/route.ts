@@ -178,7 +178,17 @@ function buildEmailHtml(fields: Record<string, string>, fileLinks: Record<string
 </html>`;
 }
 
-async function sendEmail(fields: Record<string, string>, fileLinks: Record<string, string>) {
+interface FileAttachment {
+  filename: string;
+  content: Buffer;
+  contentType: string;
+}
+
+async function sendEmail(
+  fields: Record<string, string>,
+  fileLinks: Record<string, string>,
+  attachments: FileAttachment[]
+) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -192,6 +202,11 @@ async function sendEmail(fields: Record<string, string>, fileLinks: Record<strin
     to: "zoeb@plusmaterials.com",
     subject: `New Order — ${fields.vendor || "Unknown Vendor"} · ${fields.department || ""}`,
     html: buildEmailHtml(fields, fileLinks),
+    attachments: attachments.map((a) => ({
+      filename: a.filename,
+      content: a.content,
+      contentType: a.contentType,
+    })),
   });
 }
 
@@ -238,15 +253,24 @@ export async function POST(request: NextRequest) {
     let customerBookingLink = "";
     let customerPOLink = "";
     const picLinks: string[] = [];
+    const attachments: FileAttachment[] = [];
 
     if (customerBookingFile?.size) {
+      const buf = Buffer.from(await customerBookingFile.arrayBuffer());
+      attachments.push({ filename: customerBookingFile.name, content: buf, contentType: customerBookingFile.type || "application/octet-stream" });
       customerBookingLink = await uploadFileToDrive(auth, customerBookingFile, folderId);
     }
     if (customerPOFile?.size) {
+      const buf = Buffer.from(await customerPOFile.arrayBuffer());
+      attachments.push({ filename: customerPOFile.name, content: buf, contentType: customerPOFile.type || "application/octet-stream" });
       customerPOLink = await uploadFileToDrive(auth, customerPOFile, folderId);
     }
     for (const pic of pictureFiles) {
-      if (pic.size) picLinks.push(await uploadFileToDrive(auth, pic, folderId));
+      if (pic.size) {
+        const buf = Buffer.from(await pic.arrayBuffer());
+        attachments.push({ filename: pic.name, content: buf, contentType: pic.type || "image/jpeg" });
+        picLinks.push(await uploadFileToDrive(auth, pic, folderId));
+      }
     }
 
     const fileLinks = {
@@ -291,7 +315,7 @@ export async function POST(request: NextRequest) {
     ];
 
     await appendToSheet(auth, row);
-    await sendEmail(fields, fileLinks);
+    await sendEmail(fields, fileLinks, attachments);
 
     return NextResponse.json({ success: true });
   } catch (err) {
