@@ -222,6 +222,12 @@ function buildEmailHtml(
 </html>`;
 }
 
+const CC_ALWAYS = [
+  "sunaina@plusmaterials.com",
+  "sumera@plusmaterials.com",
+  "sameera@plusmaterials.com",
+];
+
 interface FileAttachment {
   filename: string;
   content: Buffer;
@@ -234,6 +240,22 @@ async function sendEmail(
   fileLinks: Record<string, string>,
   attachments: FileAttachment[]
 ) {
+  // Collect all selected people's emails
+  const toSet = new Set<string>();
+
+  if (fields.buyingManager) toSet.add(fields.buyingManager);
+  if (fields.salesRepresentative) toSet.add(fields.salesRepresentative);
+  if (fields.secondaryAccountManagers) {
+    fields.secondaryAccountManagers.split(", ").filter(Boolean).forEach((e) => toSet.add(e));
+  }
+  if (fields.logisticsManager && fields.logisticsManager !== "other") {
+    toSet.add(fields.logisticsManager);
+  } else if (fields.logisticsManager === "other" && fields.logisticsManagerOtherEmail) {
+    toSet.add(fields.logisticsManagerOtherEmail);
+  }
+
+  const toList = Array.from(toSet).join(", ");
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
@@ -244,7 +266,8 @@ async function sendEmail(
 
   await transporter.sendMail({
     from: `"Plus Materials Orders" <${process.env.EMAIL_USER}>`,
-    to: "zoeb@plusmaterials.com",
+    to: toList,
+    cc: CC_ALWAYS.join(", "),
     subject: `[#${trackingNumber}] New Order — ${fields.vendor || "Unknown Vendor"} · ${fields.department || ""}`,
     html: buildEmailHtml(trackingNumber, fields, fileLinks),
     attachments: attachments.map((a) => ({
