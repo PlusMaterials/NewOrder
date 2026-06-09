@@ -74,6 +74,8 @@ async function uploadFileToDrive(
   const stream = Readable.from(buffer);
 
   const res = await drive.files.create({
+    // supportsAllDrives is required for Shared Drive uploads
+    supportsAllDrives: true,
     requestBody: { name: file.name, parents: [folderId] },
     media: { mimeType: file.type || "application/octet-stream", body: stream },
     fields: "id,webViewLink",
@@ -81,6 +83,7 @@ async function uploadFileToDrive(
 
   await drive.permissions.create({
     fileId: res.data.id!,
+    supportsAllDrives: true,
     requestBody: { role: "reader", type: "anyone" },
   });
 
