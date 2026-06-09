@@ -224,9 +224,12 @@ export default function NewOrderForm() {
   return (
     <div className="max-w-2xl mx-auto">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="bg-blue-600 px-8 py-6">
-          <h1 className="text-2xl font-bold text-white">New Order</h1>
-          <p className="text-blue-100 text-sm mt-1">Plus Materials — Order Submission</p>
+        <div className="bg-blue-600 px-8 py-6 flex items-center gap-4">
+          <img src="/logo.png" alt="Plus Materials" className="h-12 w-12 rounded-lg flex-shrink-0" />
+          <div>
+            <h1 className="text-2xl font-bold text-white">New Order</h1>
+            <p className="text-blue-100 text-sm mt-0.5">Plus Materials — Order Submission</p>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
