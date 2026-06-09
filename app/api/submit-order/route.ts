@@ -4,9 +4,9 @@ import nodemailer from "nodemailer";
 import { Readable } from "stream";
 
 const SHEET_HEADERS = [
+  "Timestamp",
   "Tracking #",
   "Order #",
-  "Timestamp",
   "Buying Manager",
   "Sales Representative",
   "Secondary Account Managers",
@@ -340,9 +340,9 @@ export async function POST(request: NextRequest) {
         : displayName(fields.logisticsManager);
 
     const row = [
+      new Date().toISOString(),
       String(trackingNumber),
       "", // Order # — left blank for the team to fill in
-      new Date().toISOString(),
       displayName(fields.buyingManager),
       displayName(fields.salesRepresentative),
       fields.secondaryAccountManagers.split(", ").map(displayName).join(", "),

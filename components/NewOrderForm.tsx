@@ -396,34 +396,6 @@ export default function NewOrderForm() {
             <input type="text" name="pricing" value={form.pricing} onChange={handleChange} placeholder="Enter pricing" className={inputCls} />
           </div>
 
-          {/* Customer Booking */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Customer Booking</label>
-            <div className="border border-dashed border-gray-300 rounded-lg px-4 py-4 bg-gray-50">
-              <input
-                ref={customerBookingRef}
-                type="file"
-                onChange={(e) => set("customerBooking", e.target.files?.[0] ?? null)}
-                className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 w-full"
-              />
-              {form.customerBooking && <p className="text-xs text-gray-500 mt-1">{form.customerBooking.name}</p>}
-            </div>
-          </div>
-
-          {/* Customer PO */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Customer PO</label>
-            <div className="border border-dashed border-gray-300 rounded-lg px-4 py-4 bg-gray-50">
-              <input
-                ref={customerPORef}
-                type="file"
-                onChange={(e) => set("customerPO", e.target.files?.[0] ?? null)}
-                className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 w-full"
-              />
-              {form.customerPO && <p className="text-xs text-gray-500 mt-1">{form.customerPO.name}</p>}
-            </div>
-          </div>
-
           {/* Minimum Loading Weight */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -520,6 +492,36 @@ export default function NewOrderForm() {
               placeholder="Any additional information..."
               className={`${inputCls} resize-none`}
             />
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* Customer Booking */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Customer Booking</label>
+            <div className="border border-dashed border-gray-300 rounded-lg px-4 py-4 bg-gray-50">
+              <input
+                ref={customerBookingRef}
+                type="file"
+                onChange={(e) => set("customerBooking", e.target.files?.[0] ?? null)}
+                className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 w-full"
+              />
+              {form.customerBooking && <p className="text-xs text-gray-500 mt-1">{form.customerBooking.name}</p>}
+            </div>
+          </div>
+
+          {/* Customer PO */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Customer PO</label>
+            <div className="border border-dashed border-gray-300 rounded-lg px-4 py-4 bg-gray-50">
+              <input
+                ref={customerPORef}
+                type="file"
+                onChange={(e) => set("customerPO", e.target.files?.[0] ?? null)}
+                className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 w-full"
+              />
+              {form.customerPO && <p className="text-xs text-gray-500 mt-1">{form.customerPO.name}</p>}
+            </div>
           </div>
 
           {/* Pictures */}
