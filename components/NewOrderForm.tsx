@@ -390,13 +390,13 @@ export default function NewOrderForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Purchase Order Items <span className="text-red-500">*</span>
             </label>
-            <input type="text" name="poItems" value={form.poItems} onChange={handleChange} required placeholder="Enter purchase order items" className={inputCls} />
+            <textarea name="poItems" value={form.poItems} onChange={handleChange} required placeholder="Enter purchase order items" rows={3} className={`${inputCls} resize-none`} />
           </div>
 
           {/* Pricing */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Pricing</label>
-            <input type="text" name="pricing" value={form.pricing} onChange={handleChange} placeholder="Enter pricing" className={inputCls} />
+            <textarea name="pricing" value={form.pricing} onChange={handleChange} placeholder="Enter pricing" rows={3} className={`${inputCls} resize-none`} />
           </div>
 
           {/* Minimum Loading Weight */}
@@ -460,13 +460,13 @@ export default function NewOrderForm() {
           {/* Sales Order Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Description</label>
-            <input type="text" name="soDescription" value={form.soDescription} onChange={handleChange} placeholder="Enter sales order description" className={inputCls} />
+            <textarea name="soDescription" value={form.soDescription} onChange={handleChange} placeholder="Enter sales order description" rows={3} className={`${inputCls} resize-none`} />
           </div>
 
           {/* Sales Order Price */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Price</label>
-            <input type="text" name="soPrice" value={form.soPrice} onChange={handleChange} placeholder="Enter sales order price" className={inputCls} />
+            <textarea name="soPrice" value={form.soPrice} onChange={handleChange} placeholder="Enter sales order price" rows={3} className={`${inputCls} resize-none`} />
           </div>
 
           {/* Sales Order QTY */}
