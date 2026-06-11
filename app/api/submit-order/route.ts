@@ -125,23 +125,23 @@ async function uploadFileToDrive(
   return res.data.webViewLink || `https://drive.google.com/file/d/${res.data.id}/view`;
 }
 
+async function syncHeaders(auth: ReturnType<typeof getAuth>) {
+  const sheets = google.sheets({ version: "v4", auth });
+  const sheetId = process.env.GOOGLE_SHEET_ID!;
+  await sheets.spreadsheets.values.update({
+    spreadsheetId: sheetId,
+    range: "Sheet1!A1",
+    valueInputOption: "RAW",
+    requestBody: { values: [SHEET_HEADERS] },
+  });
+}
+
 async function appendToSheet(auth: ReturnType<typeof getAuth>, row: string[]) {
   const sheets = google.sheets({ version: "v4", auth });
   const sheetId = process.env.GOOGLE_SHEET_ID!;
 
-  const check = await sheets.spreadsheets.values.get({
-    spreadsheetId: sheetId,
-    range: "Sheet1!A1:A1",
-  });
-
-  if (!check.data.values?.length) {
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: sheetId,
-      range: "Sheet1!A1",
-      valueInputOption: "RAW",
-      requestBody: { values: [SHEET_HEADERS] },
-    });
-  }
+  // Always keep headers in sync with SHEET_HEADERS
+  await syncHeaders(auth);
 
   await sheets.spreadsheets.values.append({
     spreadsheetId: sheetId,
