@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { signOut, useSession } from "next-auth/react";
 
 const TEAM_MEMBERS = [
   { name: "Murad", email: "murad@plusmaterials.com" },
@@ -226,10 +227,17 @@ export default function NewOrderForm() {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="bg-blue-600 px-8 py-6 flex items-center gap-4">
           <img src="/logo.png" alt="Plus Materials" className="h-12 w-12 rounded-lg flex-shrink-0" />
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-white">New Order</h1>
             <p className="text-blue-100 text-sm mt-0.5">Plus Materials — Order Submission</p>
           </div>
+          <button
+            type="button"
+            onClick={() => signOut({ callbackUrl: "/login" })}
+            className="text-blue-200 hover:text-white text-xs font-medium transition-colors"
+          >
+            Sign out
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
