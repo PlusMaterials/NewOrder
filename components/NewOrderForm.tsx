@@ -102,6 +102,7 @@ interface FormState {
   portRamp: string;
   productGrade: string;
   hsCode: string;
+  hsCodeOther: string;
   poItems: string;
   pricing: string;
   customerBooking: File | null;
@@ -136,6 +137,7 @@ const initial: FormState = {
   portRamp: "",
   productGrade: "",
   hsCode: "",
+  hsCodeOther: "",
   poItems: "",
   pricing: "",
   customerBooking: null,
@@ -260,7 +262,7 @@ export default function NewOrderForm() {
       ...prev,
       [name]: value,
       // Clear HS code when product grade changes
-      ...(name === "productGrade" ? { hsCode: "" } : {}),
+      ...(name === "productGrade" ? { hsCode: "", hsCodeOther: "" } : {}),
     }));
   };
 
@@ -307,7 +309,7 @@ export default function NewOrderForm() {
       fd.append("vendorContactEmail", form.vendorContactEmail);
       fd.append("placeOfLoading", form.placeOfLoading);
       fd.append("portRamp", isDomestic ? "" : form.portRamp);
-      fd.append("hsCode", isDomestic ? "" : form.hsCode);
+      fd.append("hsCode", isDomestic ? "" : (form.hsCode === "Other" ? form.hsCodeOther : form.hsCode));
       fd.append("productGrade", isDomestic ? "" : form.productGrade);
       fd.append("poItems", form.poItems);
       fd.append("pricing", form.pricing);
@@ -579,7 +581,7 @@ export default function NewOrderForm() {
               </div>
 
               {form.productGrade && (
-                <div>
+                <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">HS Code</label>
                   <select name="hsCode" value={form.hsCode} onChange={handleChange} className={inputCls}>
                     <option value="">Select HS code</option>
@@ -588,7 +590,19 @@ export default function NewOrderForm() {
                         {item.code} — {item.description}
                       </option>
                     ))}
+                    <option value="Other">Other</option>
                   </select>
+                  {form.hsCode === "Other" && (
+                    <input
+                      type="text"
+                      name="hsCodeOther"
+                      value={form.hsCodeOther}
+                      onChange={handleChange}
+                      placeholder="Enter HS code"
+                      autoComplete="off"
+                      className={inputCls}
+                    />
+                  )}
                 </div>
               )}
             </>
