@@ -36,7 +36,8 @@ const PRODUCT_GRADES = [
   "Waste and Scrap of Plastic",
 ];
 
-const SHIPPING_TERMS = ["FOB", "FAS", "CIF", "Delivered"];
+const SHIPPING_TERMS_EXPORT = ["FOB", "FAS", "CIF"];
+const SHIPPING_TERMS_DOMESTIC = ["FOB", "Delivered"];
 
 const PAYMENT_TERMS = [
   "100% Advance",
@@ -127,6 +128,16 @@ export default function NewOrderForm() {
   const picturesRef = useRef<HTMLInputElement>(null);
 
   const isDomestic = form.logisticsManager === DOMESTIC_LOGISTICS_EMAIL;
+
+  // Clear shipping term if it isn't valid for the current shipment type
+  useEffect(() => {
+    const allowed = isDomestic ? SHIPPING_TERMS_DOMESTIC : SHIPPING_TERMS_EXPORT;
+    setForm((prev) =>
+      prev.poShippingTerms && !allowed.includes(prev.poShippingTerms)
+        ? { ...prev, poShippingTerms: "" }
+        : prev
+    );
+  }, [isDomestic]);
 
   useEffect(() => {
     fetch("/api/vendors")
@@ -425,12 +436,12 @@ export default function NewOrderForm() {
             <input type="email" name="vendorContactEmail" value={form.vendorContactEmail} onChange={handleChange} placeholder="vendor@example.com" className={inputCls} />
           </div>
 
-          {/* Product / Grade */}
+          {/* Product / Grade — not required for domestic shipments */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product / Grade <span className="text-red-500">*</span>
+              Product / Grade {!isDomestic && <span className="text-red-500">*</span>}
             </label>
-            <select name="productGrade" value={form.productGrade} onChange={handleChange} required className={inputCls}>
+            <select name="productGrade" value={form.productGrade} onChange={handleChange} required={!isDomestic} className={inputCls}>
               <option value="">Select product/grade</option>
               {PRODUCT_GRADES.map((p) => <option key={p} value={p}>{p}</option>)}
             </select>
@@ -463,7 +474,9 @@ export default function NewOrderForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Order Shipping Terms</label>
             <select name="poShippingTerms" value={form.poShippingTerms} onChange={handleChange} className={inputCls}>
               <option value="">Select shipping terms</option>
-              {SHIPPING_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
+              {(isDomestic ? SHIPPING_TERMS_DOMESTIC : SHIPPING_TERMS_EXPORT).map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
             </select>
           </div>
 
