@@ -17,6 +17,7 @@ const SHEET_HEADERS = [
   "Place of Loading",
   "Export Port / Ramp",
   "Product / Grade",
+  "HS Code",
   "Purchase Order Items",
   "Pricing",
   "Customer Booking",
@@ -198,6 +199,7 @@ function buildEmailHtml(
           ${row("Place of Loading", fields.placeOfLoading)}
           ${row("Export Port / Ramp", fields.portRamp)}
           ${row("Product / Grade", fields.productGrade)}
+          ${row("HS Code", fields.hsCode)}
           ${row("Purchase Order Items", fields.poItems)}
           ${row("Pricing", fields.pricing)}
           ${linkRow("Customer Booking", fileLinks.customerBooking)}
@@ -298,6 +300,7 @@ export async function POST(request: NextRequest) {
       placeOfLoading: getString("placeOfLoading"),
       portRamp: getString("portRamp"),
       productGrade: getString("productGrade"),
+      hsCode: getString("hsCode"),
       poItems: getString("poItems"),
       pricing: getString("pricing"),
       minimumLoadingWeight: getString("minimumLoadingWeight"),
@@ -379,6 +382,7 @@ export async function POST(request: NextRequest) {
       fields.placeOfLoading,
       fields.portRamp,
       fields.productGrade,
+      fields.hsCode,
       fields.poItems,
       fields.pricing,
       customerBookingLink,

@@ -29,11 +29,37 @@ const DOMESTIC_LOGISTICS_EMAIL = "farida.lakhani@plusmaterials.com";
 const DEPARTMENTS = ["Plus", "PRN", "PRN SE", "Walton"];
 
 const PRODUCT_GRADES = [
-  "Plastic job lot",
-  "Paper job lot",
-  "Waste and Scrap of Paper",
-  "Waste and Scrap of Plastic",
+  "Plastic Job Lot",
+  "Paper Job Lot",
+  "Waste and Scrap Plastic",
+  "Waste and Scrap Paper",
 ];
+
+const HS_CODES: Record<string, { code: string; description: string }[]> = {
+  "Plastic Job Lot": [
+    { code: "39201019", description: "Plastic Packaging Material, Mixed Size & Thickness" },
+    { code: "39201019", description: "Plastic, Mixed Size & Micron" },
+    { code: "39207119", description: "PE Plastic Film Rolls, Printed & Unprinted, Mixed Size & Micron" },
+    { code: "39209999", description: "Plastic Film Rolls, Printed & Unprinted, Mixed Size & Micron" },
+  ],
+  "Paper Job Lot": [
+    { code: "48025590", description: "Uncoated Paper" },
+    { code: "48041900", description: "Kraft Paper Board" },
+    { code: "48041900", description: "Bleached Kraft Paper Stock, Mixed Size & GSM" },
+    { code: "48043900", description: "Color Kraft Paper Rolls, Mixed Size & GSM" },
+    { code: "48045900", description: "Bleached Kraft Paper, Mixed Size & GSM" },
+    { code: "48114100", description: "Self-Adhesive Paper & Board, Mixed Size & GSM" },
+    { code: "48119099", description: "Silicone Paper in Rolls, Mixed Size & GSM" },
+    { code: "47032100", description: "Bleached Softwood Pulp in Rolls, Off-Grade" },
+  ],
+  "Waste and Scrap Plastic": [
+    { code: "39159011", description: "PP Plastic Scrap" },
+  ],
+  "Waste and Scrap Paper": [
+    { code: "47071000", description: "Waste Paper, Corrugated Containers (OCC)" },
+    { code: "47079000", description: "Waste Paper, White Wet Strength Scrap" },
+  ],
+};
 
 const SHIPPING_TERMS_EXPORT = ["FOB", "FAS", "CIF"];
 const SHIPPING_TERMS_DOMESTIC = ["FOB", "Delivered"];
@@ -75,6 +101,7 @@ interface FormState {
   placeOfLoading: string;
   portRamp: string;
   productGrade: string;
+  hsCode: string;
   poItems: string;
   pricing: string;
   customerBooking: File | null;
@@ -108,6 +135,7 @@ const initial: FormState = {
   placeOfLoading: "",
   portRamp: "",
   productGrade: "",
+  hsCode: "",
   poItems: "",
   pricing: "",
   customerBooking: null,
@@ -226,7 +254,15 @@ export default function NewOrderForm() {
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-  ) => set(e.target.name as keyof FormState, e.target.value);
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+      // Clear HS code when product grade changes
+      ...(name === "productGrade" ? { hsCode: "" } : {}),
+    }));
+  };
 
   const handleVendorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -271,6 +307,7 @@ export default function NewOrderForm() {
       fd.append("vendorContactEmail", form.vendorContactEmail);
       fd.append("placeOfLoading", form.placeOfLoading);
       fd.append("portRamp", isDomestic ? "" : form.portRamp);
+      fd.append("hsCode", isDomestic ? "" : form.hsCode);
       fd.append("productGrade", isDomestic ? "" : form.productGrade);
       fd.append("poItems", form.poItems);
       fd.append("pricing", form.pricing);
@@ -528,17 +565,33 @@ export default function NewOrderForm() {
             />
           </div>
 
-          {/* Product / Grade — hidden for domestic shipments */}
+          {/* Product / Grade + HS Code — hidden for domestic shipments */}
           {!isDomestic && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Product / Grade <span className="text-red-500">*</span>
-              </label>
-              <select name="productGrade" value={form.productGrade} onChange={handleChange} required className={inputCls}>
-                <option value="">Select product/grade</option>
-                {PRODUCT_GRADES.map((p) => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
+            <>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Product / Grade <span className="text-red-500">*</span>
+                </label>
+                <select name="productGrade" value={form.productGrade} onChange={handleChange} required className={inputCls}>
+                  <option value="">Select product/grade</option>
+                  {PRODUCT_GRADES.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
+
+              {form.productGrade && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">HS Code</label>
+                  <select name="hsCode" value={form.hsCode} onChange={handleChange} className={inputCls}>
+                    <option value="">Select HS code</option>
+                    {(HS_CODES[form.productGrade] ?? []).map((item, i) => (
+                      <option key={i} value={`${item.code} — ${item.description}`}>
+                        {item.code} — {item.description}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </>
           )}
 
           {/* Purchase Order Items */}

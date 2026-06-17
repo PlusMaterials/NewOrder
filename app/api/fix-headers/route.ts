@@ -15,6 +15,7 @@ const SHEET_HEADERS = [
   "Place of Loading",
   "Export Port / Ramp",
   "Product / Grade",
+  "HS Code",
   "Purchase Order Items",
   "Pricing",
   "Customer Booking",
