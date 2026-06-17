@@ -26,7 +26,7 @@ const LOGISTICS_MEMBERS = [
 
 const DOMESTIC_LOGISTICS_EMAIL = "farida.lakhani@plusmaterials.com";
 
-const DEPARTMENTS = ["PRN", "PLUS", "PRN SE", "Walton"];
+const DEPARTMENTS = ["Plus", "PRN", "PRN SE", "Walton"];
 
 const PRODUCT_GRADES = [
   "Plastic job lot",
