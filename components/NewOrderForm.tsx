@@ -749,7 +749,7 @@ export default function NewOrderForm() {
           )}
 
           {/* Customer PO */}
-          <div>
+          {!hideCustomerSection && <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">Customer PO</label>
             <FileUploadButton
               id="customerPO"
@@ -758,7 +758,7 @@ export default function NewOrderForm() {
               onChange={(files) => set("customerPO", files?.[0] ?? null)}
               label={form.customerPO ? form.customerPO.name : "Tap to choose file"}
             />
-          </div>
+          </div>}
 
           {/* Pictures */}
           <div>
