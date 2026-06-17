@@ -184,6 +184,11 @@ export default function NewOrderForm() {
   const picturesRef = useRef<HTMLInputElement>(null);
 
   const isDomestic = form.logisticsManager === DOMESTIC_LOGISTICS_EMAIL;
+  // Hide sales/customer fields when a fixed domestic destination is chosen (not "Other")
+  const hideCustomerSection =
+    isDomestic &&
+    form.finalDestination !== "" &&
+    form.finalDestination !== "Other";
 
   useEffect(() => {
     const allowed = isDomestic ? SHIPPING_TERMS_DOMESTIC : SHIPPING_TERMS_EXPORT;
@@ -674,43 +679,49 @@ export default function NewOrderForm() {
             <input type="date" name="targetShipDate" value={form.targetShipDate} onChange={handleChange} className={inputCls} />
           </div>
 
-          {/* Customer */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
-            <p className="text-xs text-gray-400 mb-1">If no confirmed customer, please share tentative for SI</p>
-            <input type="text" name="customer" value={form.customer} onChange={handleChange} placeholder="Enter customer name" autoCapitalize="words" className={inputCls} />
-          </div>
+          {!hideCustomerSection && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+              <p className="text-xs text-gray-400 mb-1">If no confirmed customer, please share tentative for SI</p>
+              <input type="text" name="customer" value={form.customer} onChange={handleChange} placeholder="Enter customer name" autoCapitalize="words" className={inputCls} />
+            </div>
+          )}
 
-          <hr className="border-gray-100" />
+          {!hideCustomerSection && <hr className="border-gray-100" />}
 
-          {/* Sales Order Description */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Description</label>
-            <textarea name="soDescription" value={form.soDescription} onChange={handleChange} placeholder="Enter sales order description" className={`${inputCls} resize-none min-h-[88px]`} />
-          </div>
+          {!hideCustomerSection && (
+            <>
+              {/* Sales Order Description */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Description</label>
+                <textarea name="soDescription" value={form.soDescription} onChange={handleChange} placeholder="Enter sales order description" className={`${inputCls} resize-none min-h-[88px]`} />
+              </div>
 
-          {/* Sales Order Price */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Price</label>
-            <textarea name="soPrice" value={form.soPrice} onChange={handleChange} placeholder="Enter sales order price" className={`${inputCls} resize-none min-h-[88px]`} />
-          </div>
+              {/* Sales Order Price */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Price</label>
+                <textarea name="soPrice" value={form.soPrice} onChange={handleChange} placeholder="Enter sales order price" className={`${inputCls} resize-none min-h-[88px]`} />
+              </div>
 
-          {/* Sales Order QTY */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order QTY (Weights in MT)</label>
-            <input type="text" name="soQty" value={form.soQty} onChange={handleChange} placeholder="e.g. 100 MT" inputMode="text" className={inputCls} />
-          </div>
+              {/* Sales Order QTY */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order QTY (Weights in MT)</label>
+                <input type="text" name="soQty" value={form.soQty} onChange={handleChange} placeholder="e.g. 100 MT" inputMode="text" className={inputCls} />
+              </div>
+            </>
+          )}
 
-          {/* Payment Terms */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
-            <select name="paymentTerms" value={form.paymentTerms} onChange={handleChange} className={inputCls}>
-              <option value="">Select payment terms</option>
-              {PAYMENT_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
-            </select>
-          </div>
+          {!hideCustomerSection && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+              <select name="paymentTerms" value={form.paymentTerms} onChange={handleChange} className={inputCls}>
+                <option value="">Select payment terms</option>
+                {PAYMENT_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
+              </select>
+            </div>
+          )}
 
-          {/* Additional Notes */}
+          {/* Additional Notes — always visible */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
             <textarea
@@ -724,17 +735,18 @@ export default function NewOrderForm() {
 
           <hr className="border-gray-100" />
 
-          {/* Customer Booking */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Customer Booking</label>
-            <FileUploadButton
-              id="customerBooking"
-              inputRef={customerBookingRef}
-              accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
-              onChange={(files) => set("customerBooking", files?.[0] ?? null)}
-              label={form.customerBooking ? form.customerBooking.name : "Tap to choose file"}
-            />
-          </div>
+          {!hideCustomerSection && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Customer Booking</label>
+              <FileUploadButton
+                id="customerBooking"
+                inputRef={customerBookingRef}
+                accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
+                onChange={(files) => set("customerBooking", files?.[0] ?? null)}
+                label={form.customerBooking ? form.customerBooking.name : "Tap to choose file"}
+              />
+            </div>
+          )}
 
           {/* Customer PO */}
           <div>
