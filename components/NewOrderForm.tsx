@@ -353,7 +353,7 @@ export default function NewOrderForm() {
     <div className="max-w-2xl mx-auto pb-24">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
         <div className="bg-blue-600 px-6 py-4 flex items-center gap-3">
-          <img src="/favicon.png" alt="Plus Materials" className="h-10 w-10 flex-shrink-0" />
+          <img src="/favicon.png" alt="Plus Materials" className="h-10 w-10 object-contain flex-shrink-0" />
           <h1 className="text-xl font-bold text-white flex-1">New Order Form</h1>
           <button
             type="button"
