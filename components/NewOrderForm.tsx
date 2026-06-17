@@ -38,6 +38,16 @@ const PRODUCT_GRADES = [
 const SHIPPING_TERMS_EXPORT = ["FOB", "FAS", "CIF"];
 const SHIPPING_TERMS_DOMESTIC = ["FOB", "Delivered"];
 
+const DOMESTIC_DESTINATIONS = [
+  "PRN SE",
+  "Walton Logistics",
+  "Plus Savannah",
+  "Swift Chicago",
+  "Ryder Chicago",
+  "Atlantic New Jersey",
+  "Other",
+];
+
 const PAYMENT_TERMS = [
   "100% Advance",
   "50% Advance Net 30",
@@ -72,6 +82,7 @@ interface FormState {
   minimumLoadingWeight: string;
   poShippingTerms: string;
   finalDestination: string;
+  finalDestinationOther: string;
   icd: string;
   containerQuantity: string;
   targetShipDate: string;
@@ -104,6 +115,7 @@ const initial: FormState = {
   minimumLoadingWeight: "",
   poShippingTerms: "",
   finalDestination: "",
+  finalDestinationOther: "",
   icd: "",
   containerQuantity: "",
   targetShipDate: "",
@@ -165,6 +177,7 @@ export default function NewOrderForm() {
   const [errorMsg, setErrorMsg] = useState("");
   const [trackingNumber, setTrackingNumber] = useState<number | null>(null);
   const [vendorSuggestions, setVendorSuggestions] = useState<VendorSuggestion[]>([]);
+  const [pastDestinations, setPastDestinations] = useState<string[]>([]);
   const customerBookingRef = useRef<HTMLInputElement>(null);
   const customerPORef = useRef<HTMLInputElement>(null);
   const picturesRef = useRef<HTMLInputElement>(null);
@@ -173,11 +186,13 @@ export default function NewOrderForm() {
 
   useEffect(() => {
     const allowed = isDomestic ? SHIPPING_TERMS_DOMESTIC : SHIPPING_TERMS_EXPORT;
-    setForm((prev) =>
-      prev.poShippingTerms && !allowed.includes(prev.poShippingTerms)
-        ? { ...prev, poShippingTerms: "" }
-        : prev
-    );
+    setForm((prev) => ({
+      ...prev,
+      poShippingTerms:
+        prev.poShippingTerms && !allowed.includes(prev.poShippingTerms) ? "" : prev.poShippingTerms,
+      finalDestination: "",
+      finalDestinationOther: "",
+    }));
   }, [isDomestic]);
 
   useEffect(() => {
@@ -185,6 +200,13 @@ export default function NewOrderForm() {
       .then((res) => (res.ok ? res.json() : { vendors: [] }))
       .then((data) => setVendorSuggestions(data.vendors ?? []))
       .catch(() => setVendorSuggestions([]));
+  }, []);
+
+  useEffect(() => {
+    fetch("/api/destinations")
+      .then((res) => (res.ok ? res.json() : { destinations: [] }))
+      .then((data) => setPastDestinations(data.destinations ?? []))
+      .catch(() => setPastDestinations([]));
   }, []);
 
   const set = (field: keyof FormState, value: unknown) =>
@@ -242,7 +264,11 @@ export default function NewOrderForm() {
       fd.append("pricing", form.pricing);
       fd.append("minimumLoadingWeight", form.minimumLoadingWeight);
       fd.append("poShippingTerms", form.poShippingTerms);
-      fd.append("finalDestination", form.finalDestination);
+      const resolvedDestination =
+        isDomestic && form.finalDestination === "Other"
+          ? form.finalDestinationOther
+          : form.finalDestination;
+      fd.append("finalDestination", resolvedDestination);
       fd.append("icd", isDomestic ? "" : form.icd);
       fd.append("containerQuantity", form.containerQuantity);
       fd.append("targetShipDate", form.targetShipDate);
@@ -558,7 +584,45 @@ export default function NewOrderForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Final Destination <span className="text-red-500">*</span>
             </label>
-            <input type="text" name="finalDestination" value={form.finalDestination} onChange={handleChange} required placeholder="Enter final destination" autoCapitalize="words" className={inputCls} />
+            {isDomestic ? (
+              <div className="space-y-2">
+                <select
+                  name="finalDestination"
+                  value={form.finalDestination}
+                  onChange={handleChange}
+                  required
+                  className={inputCls}
+                >
+                  <option value="">Select destination</option>
+                  {DOMESTIC_DESTINATIONS.map((d) => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+                {form.finalDestination === "Other" && (
+                  <div>
+                    <input
+                      type="text"
+                      name="finalDestinationOther"
+                      value={form.finalDestinationOther}
+                      onChange={handleChange}
+                      required
+                      list="past-destinations"
+                      autoComplete="off"
+                      autoCapitalize="words"
+                      placeholder="Enter destination"
+                      className={inputCls}
+                    />
+                    <datalist id="past-destinations">
+                      {pastDestinations.map((d) => (
+                        <option key={d} value={d} />
+                      ))}
+                    </datalist>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <input type="text" name="finalDestination" value={form.finalDestination} onChange={handleChange} required placeholder="Enter final destination" autoCapitalize="words" className={inputCls} />
+            )}
           </div>
 
           {/* ICD — hidden for domestic shipments */}
