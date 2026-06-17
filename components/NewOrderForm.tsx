@@ -370,18 +370,6 @@ export default function NewOrderForm() {
             <input type="text" name="vendor" value={form.vendor} onChange={handleChange} required placeholder="Enter vendor name" className={inputCls} />
           </div>
 
-          {/* Place of Loading */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Place of Loading</label>
-            <input type="text" name="placeOfLoading" value={form.placeOfLoading} onChange={handleChange} placeholder="Enter FOB location" className={inputCls} />
-          </div>
-
-          {/* Port / Ramp */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Export Port / Ramp</label>
-            <input type="text" name="portRamp" value={form.portRamp} onChange={handleChange} placeholder="Enter export port or ramp" className={inputCls} />
-          </div>
-
           {/* Product / Grade */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -422,6 +410,18 @@ export default function NewOrderForm() {
               <option value="">Select shipping terms</option>
               {SHIPPING_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
             </select>
+          </div>
+
+          {/* Place of Loading */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Place of Loading</label>
+            <input type="text" name="placeOfLoading" value={form.placeOfLoading} onChange={handleChange} placeholder="Enter FOB location" className={inputCls} />
+          </div>
+
+          {/* Port / Ramp */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Export Port / Ramp</label>
+            <input type="text" name="portRamp" value={form.portRamp} onChange={handleChange} placeholder="Enter export port or ramp" className={inputCls} />
           </div>
 
           {/* Final Destination */}
