@@ -645,11 +645,13 @@ export default function NewOrderForm() {
             </select>
           </div>
 
-          {/* Place of Loading */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Place of Loading</label>
-            <input type="text" name="placeOfLoading" value={form.placeOfLoading} onChange={handleChange} placeholder="Enter FOB location" autoCapitalize="words" className={inputCls} />
-          </div>
+          {/* Place of Loading — hidden for domestic Delivered shipments */}
+          {!(isDomestic && form.poShippingTerms === "Delivered") && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Place of Loading</label>
+              <input type="text" name="placeOfLoading" value={form.placeOfLoading} onChange={handleChange} placeholder="Enter FOB location" autoCapitalize="words" className={inputCls} />
+            </div>
+          )}
 
           {/* Port / Ramp — hidden for domestic shipments */}
           {!isDomestic && (
