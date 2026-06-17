@@ -24,3 +24,13 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Prevent double-tap zoom on interactive elements */
+button, a, label, select, input, textarea {
+  touch-action: manipulation;
+}
+
+/* Safe area for sticky bottom bar on notched phones */
+.safe-area-bottom {
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}

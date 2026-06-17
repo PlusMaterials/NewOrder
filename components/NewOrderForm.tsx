@@ -24,7 +24,6 @@ const LOGISTICS_MEMBERS = [
   { name: "Farida (Domestic)", email: "farida.lakhani@plusmaterials.com" },
 ];
 
-// When the Domestic logistics manager is selected, export-only fields are hidden
 const DOMESTIC_LOGISTICS_EMAIL = "farida.lakhani@plusmaterials.com";
 
 const DEPARTMENTS = ["PRN", "PLUS", "PRN SE", "Walton"];
@@ -117,6 +116,49 @@ const initial: FormState = {
   pictures: [],
 };
 
+// Tappable file upload button — renders a styled button that triggers a hidden input
+function FileUploadButton({
+  id,
+  inputRef,
+  accept,
+  multiple,
+  capture,
+  onChange,
+  label,
+}: {
+  id: string;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+  accept: string;
+  multiple?: boolean;
+  capture?: "environment" | "user";
+  onChange: (files: FileList | null) => void;
+  label: string;
+}) {
+  return (
+    <>
+      <input
+        id={id}
+        ref={inputRef}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        capture={capture}
+        className="sr-only"
+        onChange={(e) => onChange(e.target.files)}
+      />
+      <label
+        htmlFor={id}
+        className="flex items-center justify-center gap-2 w-full cursor-pointer rounded-lg border border-dashed border-gray-300 bg-gray-50 py-4 px-4 text-sm font-medium text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors touch-manipulation select-none"
+      >
+        <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-8m0 0-3 3m3-3 3 3M4.5 19.5h15a1.5 1.5 0 0 0 0-3H18l-1.5-3H7.5L6 16.5H4.5a1.5 1.5 0 0 0 0 3Z" />
+        </svg>
+        {label}
+      </label>
+    </>
+  );
+}
+
 export default function NewOrderForm() {
   const [form, setForm] = useState<FormState>(initial);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -129,7 +171,6 @@ export default function NewOrderForm() {
 
   const isDomestic = form.logisticsManager === DOMESTIC_LOGISTICS_EMAIL;
 
-  // Clear shipping term if it isn't valid for the current shipment type
   useEffect(() => {
     const allowed = isDomestic ? SHIPPING_TERMS_DOMESTIC : SHIPPING_TERMS_EXPORT;
     setForm((prev) =>
@@ -155,7 +196,6 @@ export default function NewOrderForm() {
 
   const handleVendorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    // If the typed/selected vendor matches a previous entry, pre-fill its email
     const match = vendorSuggestions.find(
       (v) => v.vendor.toLowerCase() === value.trim().toLowerCase()
     );
@@ -257,7 +297,7 @@ export default function NewOrderForm() {
         <p className="text-gray-500 mb-6">Your order has been saved and a confirmation email has been sent.</p>
         <button
           onClick={handleReset}
-          className="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium touch-manipulation"
         >
           Submit Another Order
         </button>
@@ -265,27 +305,31 @@ export default function NewOrderForm() {
     );
   }
 
-  const inputCls = "w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent";
+  // Tall inputs for comfortable touch interaction
+  const inputCls = "w-full border border-gray-300 rounded-lg px-3 py-3 text-base text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent touch-manipulation";
+
+  // Full-row label wrapper for checkboxes/radios — entire row is tappable
+  const checkRowCls = "flex items-center gap-3 cursor-pointer py-2 px-3 rounded-lg hover:bg-gray-50 active:bg-gray-100 touch-manipulation -mx-3";
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto pb-24">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="bg-blue-600 px-8 py-6 flex items-center gap-4">
+        <div className="bg-blue-600 px-6 py-5 flex items-center gap-4">
           <img src="/logo.png" alt="Plus Materials" className="h-12 w-12 rounded-lg flex-shrink-0" />
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-white">New Order</h1>
+            <h1 className="text-xl font-bold text-white">New Order</h1>
             <p className="text-blue-100 text-sm mt-0.5">Plus Materials — Order Submission</p>
           </div>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="text-blue-200 hover:text-white text-xs font-medium transition-colors"
+            className="text-blue-200 hover:text-white text-xs font-medium transition-colors touch-manipulation py-2 px-1"
           >
             Sign out
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-8 py-6 space-y-6">
+        <form onSubmit={handleSubmit} className="px-5 py-6 space-y-6">
 
           {/* Buyer */}
           <div>
@@ -315,15 +359,15 @@ export default function NewOrderForm() {
 
           {/* Secondary Account Manager */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Secondary Account Manager</label>
-            <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Account Manager</label>
+            <div className="space-y-0.5">
               {TEAM_MEMBERS.map((m) => (
-                <label key={m.email} className="flex items-center gap-2 cursor-pointer">
+                <label key={m.email} className={checkRowCls}>
                   <input
                     type="checkbox"
                     checked={form.secondaryAccountManagers.includes(m.email)}
                     onChange={() => toggleCheckbox(m.email)}
-                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0"
                   />
                   <span className="text-sm text-gray-700">{m.name}</span>
                 </label>
@@ -333,40 +377,41 @@ export default function NewOrderForm() {
 
           {/* Logistics Manager */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Logistics Manager</label>
-            <div className="space-y-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">Logistics Manager</label>
+            <div className="space-y-0.5">
               {LOGISTICS_MEMBERS.map((m) => (
-                <label key={m.email} className="flex items-center gap-2 cursor-pointer">
+                <label key={m.email} className={checkRowCls}>
                   <input
                     type="radio"
                     name="logisticsManager"
                     value={m.email}
                     checked={form.logisticsManager === m.email}
                     onChange={handleChange}
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0"
                   />
                   <span className="text-sm text-gray-700">{m.name}</span>
                 </label>
               ))}
-              <label className="flex items-center gap-2 cursor-pointer">
+              <label className={checkRowCls}>
                 <input
                   type="radio"
                   name="logisticsManager"
                   value="other"
                   checked={form.logisticsManager === "other"}
                   onChange={handleChange}
-                  className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0"
                 />
                 <span className="text-sm text-gray-700">Other</span>
               </label>
               {form.logisticsManager === "other" && (
-                <div className="ml-6 space-y-2 pt-1">
+                <div className="ml-8 space-y-2 pt-1">
                   <input
                     type="text"
                     name="logisticsManagerOtherName"
                     value={form.logisticsManagerOtherName}
                     onChange={handleChange}
                     placeholder="Full name"
+                    autoComplete="off"
                     className={inputCls}
                   />
                   <input
@@ -375,6 +420,7 @@ export default function NewOrderForm() {
                     value={form.logisticsManagerOtherEmail}
                     onChange={handleChange}
                     placeholder="Email address"
+                    autoComplete="off"
                     className={inputCls}
                   />
                 </div>
@@ -384,12 +430,12 @@ export default function NewOrderForm() {
 
           {/* Department */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
               Select the Department <span className="text-red-500">*</span>
             </label>
-            <div className="flex flex-wrap gap-4">
+            <div className="grid grid-cols-2 gap-1">
               {DEPARTMENTS.map((dept) => (
-                <label key={dept} className="flex items-center gap-2 cursor-pointer">
+                <label key={dept} className={checkRowCls}>
                   <input
                     type="radio"
                     name="department"
@@ -397,7 +443,7 @@ export default function NewOrderForm() {
                     checked={form.department === dept}
                     onChange={handleChange}
                     required
-                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0"
                   />
                   <span className="text-sm text-gray-700">{dept}</span>
                 </label>
@@ -420,6 +466,8 @@ export default function NewOrderForm() {
               required
               list="vendor-suggestions"
               autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="words"
               placeholder="Enter vendor name"
               className={inputCls}
             />
@@ -433,7 +481,16 @@ export default function NewOrderForm() {
           {/* Vendor Contact Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Contact Email</label>
-            <input type="email" name="vendorContactEmail" value={form.vendorContactEmail} onChange={handleChange} placeholder="vendor@example.com" className={inputCls} />
+            <input
+              type="email"
+              name="vendorContactEmail"
+              value={form.vendorContactEmail}
+              onChange={handleChange}
+              placeholder="vendor@example.com"
+              autoComplete="off"
+              autoCapitalize="none"
+              className={inputCls}
+            />
           </div>
 
           {/* Product / Grade — hidden for domestic shipments */}
@@ -454,13 +511,13 @@ export default function NewOrderForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Purchase Order Items <span className="text-red-500">*</span>
             </label>
-            <textarea name="poItems" value={form.poItems} onChange={handleChange} required placeholder="Enter purchase order items" rows={3} className={`${inputCls} resize-none`} />
+            <textarea name="poItems" value={form.poItems} onChange={handleChange} required placeholder="Enter purchase order items" className={`${inputCls} resize-none min-h-[88px]`} />
           </div>
 
           {/* Pricing */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Pricing</label>
-            <textarea name="pricing" value={form.pricing} onChange={handleChange} placeholder="Enter pricing" rows={3} className={`${inputCls} resize-none`} />
+            <textarea name="pricing" value={form.pricing} onChange={handleChange} placeholder="Enter pricing" className={`${inputCls} resize-none min-h-[88px]`} />
           </div>
 
           {/* Minimum Loading Weight */}
@@ -468,7 +525,7 @@ export default function NewOrderForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Minimum Loading Weight <span className="text-red-500">*</span>
             </label>
-            <input type="text" name="minimumLoadingWeight" value={form.minimumLoadingWeight} onChange={handleChange} required placeholder="e.g. 20 MT" className={inputCls} />
+            <input type="text" name="minimumLoadingWeight" value={form.minimumLoadingWeight} onChange={handleChange} required placeholder="e.g. 20 MT" inputMode="text" className={inputCls} />
           </div>
 
           {/* Purchase Order Shipping Terms */}
@@ -485,14 +542,14 @@ export default function NewOrderForm() {
           {/* Place of Loading */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Place of Loading</label>
-            <input type="text" name="placeOfLoading" value={form.placeOfLoading} onChange={handleChange} placeholder="Enter FOB location" className={inputCls} />
+            <input type="text" name="placeOfLoading" value={form.placeOfLoading} onChange={handleChange} placeholder="Enter FOB location" autoCapitalize="words" className={inputCls} />
           </div>
 
           {/* Port / Ramp — hidden for domestic shipments */}
           {!isDomestic && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Export Port / Ramp</label>
-              <input type="text" name="portRamp" value={form.portRamp} onChange={handleChange} placeholder="Enter export port or ramp" className={inputCls} />
+              <input type="text" name="portRamp" value={form.portRamp} onChange={handleChange} placeholder="Enter export port or ramp" autoCapitalize="words" className={inputCls} />
             </div>
           )}
 
@@ -501,14 +558,14 @@ export default function NewOrderForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Final Destination <span className="text-red-500">*</span>
             </label>
-            <input type="text" name="finalDestination" value={form.finalDestination} onChange={handleChange} required placeholder="Enter final destination" className={inputCls} />
+            <input type="text" name="finalDestination" value={form.finalDestination} onChange={handleChange} required placeholder="Enter final destination" autoCapitalize="words" className={inputCls} />
           </div>
 
           {/* ICD — hidden for domestic shipments */}
           {!isDomestic && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">ICD</label>
-              <input type="text" name="icd" value={form.icd} onChange={handleChange} placeholder="Enter ICD" className={inputCls} />
+              <input type="text" name="icd" value={form.icd} onChange={handleChange} placeholder="Enter ICD" autoCapitalize="words" className={inputCls} />
             </div>
           )}
 
@@ -532,7 +589,7 @@ export default function NewOrderForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
             <p className="text-xs text-gray-400 mb-1">If no confirmed customer, please share tentative for SI</p>
-            <input type="text" name="customer" value={form.customer} onChange={handleChange} placeholder="Enter customer name" className={inputCls} />
+            <input type="text" name="customer" value={form.customer} onChange={handleChange} placeholder="Enter customer name" autoCapitalize="words" className={inputCls} />
           </div>
 
           <hr className="border-gray-100" />
@@ -540,19 +597,19 @@ export default function NewOrderForm() {
           {/* Sales Order Description */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Description</label>
-            <textarea name="soDescription" value={form.soDescription} onChange={handleChange} placeholder="Enter sales order description" rows={3} className={`${inputCls} resize-none`} />
+            <textarea name="soDescription" value={form.soDescription} onChange={handleChange} placeholder="Enter sales order description" className={`${inputCls} resize-none min-h-[88px]`} />
           </div>
 
           {/* Sales Order Price */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Price</label>
-            <textarea name="soPrice" value={form.soPrice} onChange={handleChange} placeholder="Enter sales order price" rows={3} className={`${inputCls} resize-none`} />
+            <textarea name="soPrice" value={form.soPrice} onChange={handleChange} placeholder="Enter sales order price" className={`${inputCls} resize-none min-h-[88px]`} />
           </div>
 
           {/* Sales Order QTY */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order QTY (Weights in MT)</label>
-            <input type="text" name="soQty" value={form.soQty} onChange={handleChange} placeholder="e.g. 100 MT" className={inputCls} />
+            <input type="text" name="soQty" value={form.soQty} onChange={handleChange} placeholder="e.g. 100 MT" inputMode="text" className={inputCls} />
           </div>
 
           {/* Payment Terms */}
@@ -571,9 +628,8 @@ export default function NewOrderForm() {
               name="additionalNotes"
               value={form.additionalNotes}
               onChange={handleChange}
-              rows={4}
               placeholder="Any additional information..."
-              className={`${inputCls} resize-none`}
+              className={`${inputCls} resize-none min-h-[100px]`}
             />
           </div>
 
@@ -581,66 +637,101 @@ export default function NewOrderForm() {
 
           {/* Customer Booking */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Customer Booking</label>
-            <div className="border border-dashed border-gray-300 rounded-lg px-4 py-4 bg-gray-50">
-              <input
-                ref={customerBookingRef}
-                type="file"
-                onChange={(e) => set("customerBooking", e.target.files?.[0] ?? null)}
-                className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 w-full"
-              />
-              {form.customerBooking && <p className="text-xs text-gray-500 mt-1">{form.customerBooking.name}</p>}
-            </div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Customer Booking</label>
+            <FileUploadButton
+              id="customerBooking"
+              inputRef={customerBookingRef}
+              accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
+              onChange={(files) => set("customerBooking", files?.[0] ?? null)}
+              label={form.customerBooking ? form.customerBooking.name : "Tap to choose file"}
+            />
           </div>
 
           {/* Customer PO */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Customer PO</label>
-            <div className="border border-dashed border-gray-300 rounded-lg px-4 py-4 bg-gray-50">
-              <input
-                ref={customerPORef}
-                type="file"
-                onChange={(e) => set("customerPO", e.target.files?.[0] ?? null)}
-                className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 w-full"
-              />
-              {form.customerPO && <p className="text-xs text-gray-500 mt-1">{form.customerPO.name}</p>}
-            </div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Customer PO</label>
+            <FileUploadButton
+              id="customerPO"
+              inputRef={customerPORef}
+              accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
+              onChange={(files) => set("customerPO", files?.[0] ?? null)}
+              label={form.customerPO ? form.customerPO.name : "Tap to choose file"}
+            />
           </div>
 
           {/* Pictures */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Pictures</label>
-            <div className="border border-dashed border-gray-300 rounded-lg px-4 py-4 bg-gray-50">
-              <input
-                ref={picturesRef}
-                type="file"
+            <label className="block text-sm font-medium text-gray-700 mb-2">Pictures</label>
+            <div className="space-y-2">
+              {/* Camera shortcut for mobile */}
+              <FileUploadButton
+                id="picturesCamera"
+                inputRef={{ current: null }}
                 accept="image/*"
-                multiple
-                onChange={(e) => set("pictures", Array.from(e.target.files ?? []))}
-                className="text-sm text-gray-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-medium file:bg-blue-50 file:text-blue-600 hover:file:bg-blue-100 w-full"
+                capture="environment"
+                onChange={(files) => {
+                  if (!files) return;
+                  setForm((prev) => ({ ...prev, pictures: [...prev.pictures, ...Array.from(files)] }));
+                }}
+                label="Take photo"
               />
-              {form.pictures.length > 0 && (
-                <p className="text-xs text-gray-500 mt-1">{form.pictures.length} file(s) selected</p>
-              )}
+              {/* Files + photo library */}
+              <FileUploadButton
+                id="picturesLibrary"
+                inputRef={picturesRef}
+                accept="image/*,application/pdf"
+                multiple
+                onChange={(files) => {
+                  if (!files) return;
+                  setForm((prev) => ({ ...prev, pictures: [...prev.pictures, ...Array.from(files)] }));
+                }}
+                label="Choose from files or photo library"
+              />
             </div>
+            {form.pictures.length > 0 && (
+              <div className="mt-2 space-y-1">
+                {form.pictures.map((f, i) => (
+                  <div key={i} className="flex items-center justify-between bg-gray-50 rounded px-3 py-2 text-xs text-gray-600">
+                    <span className="truncate">{f.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setForm((prev) => ({ ...prev, pictures: prev.pictures.filter((_, j) => j !== i) }))}
+                      className="ml-2 text-gray-400 hover:text-red-500 touch-manipulation flex-shrink-0"
+                      aria-label="Remove"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {status === "error" && (
             <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-3">{errorMsg}</p>
           )}
 
-          <div className="pt-2">
-            <button
-              type="submit"
-              disabled={status === "submitting"}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg font-medium text-sm hover:bg-blue-700 active:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed"
-            >
-              {status === "submitting" ? "Submitting..." : "Submit Order"}
-            </button>
-          </div>
+          {/* Spacer so content isn't hidden behind sticky button */}
+          <div className="h-2" />
 
         </form>
       </div>
+
+      {/* Sticky submit bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 px-4 py-3 safe-area-bottom">
+        <div className="max-w-2xl mx-auto">
+          <button
+            type="submit"
+            form="order-form"
+            disabled={status === "submitting"}
+            onClick={handleSubmit}
+            className="w-full bg-blue-600 text-white py-3.5 px-6 rounded-xl font-semibold text-base hover:bg-blue-700 active:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
+          >
+            {status === "submitting" ? "Submitting…" : "Submit Order"}
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 }
