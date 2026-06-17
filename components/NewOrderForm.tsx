@@ -352,16 +352,16 @@ export default function NewOrderForm() {
   return (
     <div className="max-w-2xl mx-auto pb-24">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="bg-blue-600 px-6 py-5 flex items-center gap-4">
-          <img src="/logo.png" alt="Plus Materials" className="h-12 w-12 rounded-lg flex-shrink-0" />
-          <div className="flex-1">
+        <div className="bg-blue-600 flex items-stretch gap-4">
+          <img src="/logo.png" alt="Plus Materials" className="w-auto object-contain flex-shrink-0" />
+          <div className="flex-1 py-5">
             <h1 className="text-xl font-bold text-white">New Order</h1>
             <p className="text-blue-100 text-sm mt-0.5">Plus Materials — Order Submission</p>
           </div>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="text-blue-200 hover:text-white text-xs font-medium transition-colors touch-manipulation py-2 px-1"
+            className="text-blue-200 hover:text-white text-xs font-medium transition-colors touch-manipulation py-2 px-6"
           >
             Sign out
           </button>
