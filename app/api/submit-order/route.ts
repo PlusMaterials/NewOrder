@@ -13,6 +13,7 @@ const SHEET_HEADERS = [
   "Logistics Manager",
   "Department",
   "Vendor",
+  "Vendor Contact Email",
   "Place of Loading",
   "Export Port / Ramp",
   "Product / Grade",
@@ -193,6 +194,7 @@ function buildEmailHtml(
           ${row("Department", fields.department)}
           <tr><td colspan="2" style="padding:4px 0"><hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"></td></tr>
           ${row("Vendor", fields.vendor)}
+          ${row("Vendor Contact Email", fields.vendorContactEmail)}
           ${row("Place of Loading", fields.placeOfLoading)}
           ${row("Export Port / Ramp", fields.portRamp)}
           ${row("Product / Grade", fields.productGrade)}
@@ -292,6 +294,7 @@ export async function POST(request: NextRequest) {
       logisticsManagerOtherEmail: getString("logisticsManagerOtherEmail"),
       department: getString("department"),
       vendor: getString("vendor"),
+      vendorContactEmail: getString("vendorContactEmail"),
       placeOfLoading: getString("placeOfLoading"),
       portRamp: getString("portRamp"),
       productGrade: getString("productGrade"),
@@ -372,6 +375,7 @@ export async function POST(request: NextRequest) {
       logisticsDisplay,
       fields.department,
       fields.vendor,
+      fields.vendorContactEmail,
       fields.placeOfLoading,
       fields.portRamp,
       fields.productGrade,

@@ -53,6 +53,7 @@ interface FormState {
   logisticsManagerOtherEmail: string;
   department: string;
   vendor: string;
+  vendorContactEmail: string;
   placeOfLoading: string;
   portRamp: string;
   productGrade: string;
@@ -84,6 +85,7 @@ const initial: FormState = {
   logisticsManagerOtherEmail: "",
   department: "",
   vendor: "",
+  vendorContactEmail: "",
   placeOfLoading: "",
   portRamp: "",
   productGrade: "",
@@ -150,6 +152,7 @@ export default function NewOrderForm() {
       fd.append("logisticsManagerOtherEmail", form.logisticsManagerOtherEmail);
       fd.append("department", form.department);
       fd.append("vendor", form.vendor);
+      fd.append("vendorContactEmail", form.vendorContactEmail);
       fd.append("placeOfLoading", form.placeOfLoading);
       fd.append("portRamp", form.portRamp);
       fd.append("productGrade", form.productGrade);
@@ -368,6 +371,12 @@ export default function NewOrderForm() {
               Vendor <span className="text-red-500">*</span>
             </label>
             <input type="text" name="vendor" value={form.vendor} onChange={handleChange} required placeholder="Enter vendor name" className={inputCls} />
+          </div>
+
+          {/* Vendor Contact Email */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Contact Email</label>
+            <input type="email" name="vendorContactEmail" value={form.vendorContactEmail} onChange={handleChange} placeholder="vendor@example.com" className={inputCls} />
           </div>
 
           {/* Product / Grade */}

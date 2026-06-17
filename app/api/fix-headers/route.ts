@@ -11,6 +11,7 @@ const SHEET_HEADERS = [
   "Logistics Manager",
   "Department",
   "Vendor",
+  "Vendor Contact Email",
   "Place of Loading",
   "Export Port / Ramp",
   "Product / Grade",
