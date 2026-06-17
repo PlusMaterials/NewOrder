@@ -1,7 +1,12 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { useState, useRef, useEffect } from "react";
+import { signOut } from "next-auth/react";
+
+interface VendorSuggestion {
+  vendor: string;
+  email: string;
+}
 
 const TEAM_MEMBERS = [
   { name: "Murad", email: "murad@plusmaterials.com" },
@@ -13,11 +18,14 @@ const TEAM_MEMBERS = [
 ];
 
 const LOGISTICS_MEMBERS = [
-  { name: "Rita", email: "rita@plusmaterials.com" },
-  { name: "Farida", email: "farida.lakhani@plusmaterials.com" },
-  { name: "Sahil", email: "Sahil@plusmaterials.com" },
-  { name: "Sumera", email: "sumera.kajani@plusmaterials.com" },
+  { name: "Sumera (Export Manager)", email: "sumera.kajani@plusmaterials.com" },
+  { name: "Rita (Export North)", email: "rita@plusmaterials.com" },
+  { name: "Sahil (Export South)", email: "Sahil@plusmaterials.com" },
+  { name: "Farida (Domestic)", email: "farida.lakhani@plusmaterials.com" },
 ];
+
+// When the Domestic logistics manager is selected, export-only fields are hidden
+const DOMESTIC_LOGISTICS_EMAIL = "farida.lakhani@plusmaterials.com";
 
 const DEPARTMENTS = ["PRN", "PLUS", "PRN SE", "Walton"];
 
@@ -113,9 +121,19 @@ export default function NewOrderForm() {
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [trackingNumber, setTrackingNumber] = useState<number | null>(null);
+  const [vendorSuggestions, setVendorSuggestions] = useState<VendorSuggestion[]>([]);
   const customerBookingRef = useRef<HTMLInputElement>(null);
   const customerPORef = useRef<HTMLInputElement>(null);
   const picturesRef = useRef<HTMLInputElement>(null);
+
+  const isDomestic = form.logisticsManager === DOMESTIC_LOGISTICS_EMAIL;
+
+  useEffect(() => {
+    fetch("/api/vendors")
+      .then((res) => (res.ok ? res.json() : { vendors: [] }))
+      .then((data) => setVendorSuggestions(data.vendors ?? []))
+      .catch(() => setVendorSuggestions([]));
+  }, []);
 
   const set = (field: keyof FormState, value: unknown) =>
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -123,6 +141,19 @@ export default function NewOrderForm() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => set(e.target.name as keyof FormState, e.target.value);
+
+  const handleVendorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    // If the typed/selected vendor matches a previous entry, pre-fill its email
+    const match = vendorSuggestions.find(
+      (v) => v.vendor.toLowerCase() === value.trim().toLowerCase()
+    );
+    setForm((prev) => ({
+      ...prev,
+      vendor: value,
+      vendorContactEmail: match?.email ? match.email : prev.vendorContactEmail,
+    }));
+  };
 
   const toggleCheckbox = (email: string) => {
     setForm((prev) => {
@@ -154,14 +185,14 @@ export default function NewOrderForm() {
       fd.append("vendor", form.vendor);
       fd.append("vendorContactEmail", form.vendorContactEmail);
       fd.append("placeOfLoading", form.placeOfLoading);
-      fd.append("portRamp", form.portRamp);
+      fd.append("portRamp", isDomestic ? "" : form.portRamp);
       fd.append("productGrade", form.productGrade);
       fd.append("poItems", form.poItems);
       fd.append("pricing", form.pricing);
       fd.append("minimumLoadingWeight", form.minimumLoadingWeight);
       fd.append("poShippingTerms", form.poShippingTerms);
       fd.append("finalDestination", form.finalDestination);
-      fd.append("icd", form.icd);
+      fd.append("icd", isDomestic ? "" : form.icd);
       fd.append("containerQuantity", form.containerQuantity);
       fd.append("targetShipDate", form.targetShipDate);
       fd.append("customer", form.customer);
@@ -370,7 +401,22 @@ export default function NewOrderForm() {
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Vendor <span className="text-red-500">*</span>
             </label>
-            <input type="text" name="vendor" value={form.vendor} onChange={handleChange} required placeholder="Enter vendor name" className={inputCls} />
+            <input
+              type="text"
+              name="vendor"
+              value={form.vendor}
+              onChange={handleVendorChange}
+              required
+              list="vendor-suggestions"
+              autoComplete="off"
+              placeholder="Enter vendor name"
+              className={inputCls}
+            />
+            <datalist id="vendor-suggestions">
+              {vendorSuggestions.map((v) => (
+                <option key={v.vendor} value={v.vendor} />
+              ))}
+            </datalist>
           </div>
 
           {/* Vendor Contact Email */}
@@ -427,11 +473,13 @@ export default function NewOrderForm() {
             <input type="text" name="placeOfLoading" value={form.placeOfLoading} onChange={handleChange} placeholder="Enter FOB location" className={inputCls} />
           </div>
 
-          {/* Port / Ramp */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Export Port / Ramp</label>
-            <input type="text" name="portRamp" value={form.portRamp} onChange={handleChange} placeholder="Enter export port or ramp" className={inputCls} />
-          </div>
+          {/* Port / Ramp — hidden for domestic shipments */}
+          {!isDomestic && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Export Port / Ramp</label>
+              <input type="text" name="portRamp" value={form.portRamp} onChange={handleChange} placeholder="Enter export port or ramp" className={inputCls} />
+            </div>
+          )}
 
           {/* Final Destination */}
           <div>
@@ -441,11 +489,13 @@ export default function NewOrderForm() {
             <input type="text" name="finalDestination" value={form.finalDestination} onChange={handleChange} required placeholder="Enter final destination" className={inputCls} />
           </div>
 
-          {/* ICD */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">ICD</label>
-            <input type="text" name="icd" value={form.icd} onChange={handleChange} placeholder="Enter ICD" className={inputCls} />
-          </div>
+          {/* ICD — hidden for domestic shipments */}
+          {!isDomestic && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ICD</label>
+              <input type="text" name="icd" value={form.icd} onChange={handleChange} placeholder="Enter ICD" className={inputCls} />
+            </div>
+          )}
 
           {/* Container / Load Quantity */}
           <div>
@@ -465,11 +515,9 @@ export default function NewOrderForm() {
 
           {/* Customer */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Customer <span className="text-red-500">*</span>
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
             <p className="text-xs text-gray-400 mb-1">If no confirmed customer, please share tentative for SI</p>
-            <input type="text" name="customer" value={form.customer} onChange={handleChange} required placeholder="Enter customer name" className={inputCls} />
+            <input type="text" name="customer" value={form.customer} onChange={handleChange} placeholder="Enter customer name" className={inputCls} />
           </div>
 
           <hr className="border-gray-100" />
