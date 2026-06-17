@@ -197,7 +197,7 @@ export default function NewOrderForm() {
       fd.append("vendorContactEmail", form.vendorContactEmail);
       fd.append("placeOfLoading", form.placeOfLoading);
       fd.append("portRamp", isDomestic ? "" : form.portRamp);
-      fd.append("productGrade", form.productGrade);
+      fd.append("productGrade", isDomestic ? "" : form.productGrade);
       fd.append("poItems", form.poItems);
       fd.append("pricing", form.pricing);
       fd.append("minimumLoadingWeight", form.minimumLoadingWeight);
@@ -436,16 +436,18 @@ export default function NewOrderForm() {
             <input type="email" name="vendorContactEmail" value={form.vendorContactEmail} onChange={handleChange} placeholder="vendor@example.com" className={inputCls} />
           </div>
 
-          {/* Product / Grade — not required for domestic shipments */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Product / Grade {!isDomestic && <span className="text-red-500">*</span>}
-            </label>
-            <select name="productGrade" value={form.productGrade} onChange={handleChange} required={!isDomestic} className={inputCls}>
-              <option value="">Select product/grade</option>
-              {PRODUCT_GRADES.map((p) => <option key={p} value={p}>{p}</option>)}
-            </select>
-          </div>
+          {/* Product / Grade — hidden for domestic shipments */}
+          {!isDomestic && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Product / Grade <span className="text-red-500">*</span>
+              </label>
+              <select name="productGrade" value={form.productGrade} onChange={handleChange} required className={inputCls}>
+                <option value="">Select product/grade</option>
+                {PRODUCT_GRADES.map((p) => <option key={p} value={p}>{p}</option>)}
+              </select>
+            </div>
+          )}
 
           {/* Purchase Order Items */}
           <div>
