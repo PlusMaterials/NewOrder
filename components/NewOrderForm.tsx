@@ -258,12 +258,16 @@ export default function NewOrderForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]: value,
+    setForm((prev) => {
+      const next = { ...prev, [name]: value };
       // Clear HS code when product grade changes
-      ...(name === "productGrade" ? { hsCode: "", hsCodeOther: "" } : {}),
-    }));
+      if (name === "productGrade") { next.hsCode = ""; next.hsCodeOther = ""; }
+      // Remove newly-selected buyer/salesRep from secondary account managers
+      if (name === "buyingManager" || name === "salesRepresentative") {
+        next.secondaryAccountManagers = prev.secondaryAccountManagers.filter((e) => e !== value);
+      }
+      return next;
+    });
   };
 
   const handleVendorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -435,7 +439,7 @@ export default function NewOrderForm() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Account Manager</label>
             <div className="space-y-0.5">
-              {TEAM_MEMBERS.map((m) => (
+              {TEAM_MEMBERS.filter((m) => m.email !== form.buyingManager && m.email !== form.salesRepresentative).map((m) => (
                 <label key={m.email} className={checkRowCls}>
                   <input
                     type="checkbox"
