@@ -19,17 +19,27 @@ export async function GET() {
     });
 
     const rows = res.data.values ?? [];
-    const seen = new Set<string>();
+    const DOMESTIC_PRESETS = new Set([
+      "PRN SE","Walton Logistics","Plus Savannah","Swift Chicago","Ryder Chicago","Atlantic New Jersey",
+    ]);
+
+    const exportSeen = new Set<string>();
+    const domesticOtherSeen = new Set<string>();
+
     for (let i = 1; i < rows.length; i++) {
       const val = (rows[i]?.[0] ?? "").toString().trim();
-      // Only surface values that aren't one of the fixed domestic options
-      if (val && !["PRN SE","Walton Logistics","Plus Savannah","Swift Chicago","Ryder Chicago","Atlantic New Jersey"].includes(val)) {
-        seen.add(val);
-      }
+      if (!val) continue;
+      if (DOMESTIC_PRESETS.has(val)) continue; // skip fixed domestic presets in both lists
+      // Heuristic: we can't perfectly distinguish, so surface all custom values in both lists
+      exportSeen.add(val);
+      domesticOtherSeen.add(val);
     }
 
-    const destinations = Array.from(seen).sort((a, b) => a.localeCompare(b));
-    return NextResponse.json({ destinations });
+    const sort = (s: Set<string>) => Array.from(s).sort((a, b) => a.localeCompare(b));
+    return NextResponse.json({
+      destinations: sort(exportSeen),          // used by export free-text datalist
+      domesticOther: sort(domesticOtherSeen),  // used by domestic Other datalist
+    });
   } catch (err) {
     console.error("destinations fetch error:", err);
     return NextResponse.json({ destinations: [] });

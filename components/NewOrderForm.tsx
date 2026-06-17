@@ -177,7 +177,8 @@ export default function NewOrderForm() {
   const [errorMsg, setErrorMsg] = useState("");
   const [trackingNumber, setTrackingNumber] = useState<number | null>(null);
   const [vendorSuggestions, setVendorSuggestions] = useState<VendorSuggestion[]>([]);
-  const [pastDestinations, setPastDestinations] = useState<string[]>([]);
+  const [exportDestinations, setExportDestinations] = useState<string[]>([]);
+  const [domesticOtherDestinations, setDomesticOtherDestinations] = useState<string[]>([]);
   const customerBookingRef = useRef<HTMLInputElement>(null);
   const customerPORef = useRef<HTMLInputElement>(null);
   const picturesRef = useRef<HTMLInputElement>(null);
@@ -204,9 +205,15 @@ export default function NewOrderForm() {
 
   useEffect(() => {
     fetch("/api/destinations")
-      .then((res) => (res.ok ? res.json() : { destinations: [] }))
-      .then((data) => setPastDestinations(data.destinations ?? []))
-      .catch(() => setPastDestinations([]));
+      .then((res) => (res.ok ? res.json() : { destinations: [], domesticOther: [] }))
+      .then((data) => {
+        setExportDestinations(data.destinations ?? []);
+        setDomesticOtherDestinations(data.domesticOther ?? []);
+      })
+      .catch(() => {
+        setExportDestinations([]);
+        setDomesticOtherDestinations([]);
+      });
   }, []);
 
   const set = (field: keyof FormState, value: unknown) =>
@@ -613,7 +620,7 @@ export default function NewOrderForm() {
                       className={inputCls}
                     />
                     <datalist id="past-destinations">
-                      {pastDestinations.map((d) => (
+                      {domesticOtherDestinations.map((d) => (
                         <option key={d} value={d} />
                       ))}
                     </datalist>
@@ -621,7 +628,25 @@ export default function NewOrderForm() {
                 )}
               </div>
             ) : (
-              <input type="text" name="finalDestination" value={form.finalDestination} onChange={handleChange} required placeholder="Enter final destination" autoCapitalize="words" className={inputCls} />
+              <>
+                <input
+                  type="text"
+                  name="finalDestination"
+                  value={form.finalDestination}
+                  onChange={handleChange}
+                  required
+                  list="export-destinations"
+                  autoComplete="off"
+                  autoCapitalize="words"
+                  placeholder="Enter final destination"
+                  className={inputCls}
+                />
+                <datalist id="export-destinations">
+                  {exportDestinations.map((d) => (
+                    <option key={d} value={d} />
+                  ))}
+                </datalist>
+              </>
             )}
           </div>
 
