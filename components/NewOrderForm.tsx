@@ -556,20 +556,22 @@ export default function NewOrderForm() {
             </datalist>
           </div>
 
-          {/* Vendor Contact Email */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Contact Email</label>
-            <input
-              type="email"
-              name="vendorContactEmail"
-              value={form.vendorContactEmail}
-              onChange={handleChange}
-              placeholder="vendor@example.com"
-              autoComplete="off"
-              autoCapitalize="none"
-              className={inputCls}
-            />
-          </div>
+          {/* Vendor Contact Email — shown once vendor is entered */}
+          {form.vendor.trim() && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Contact Email</label>
+              <input
+                type="email"
+                name="vendorContactEmail"
+                value={form.vendorContactEmail}
+                onChange={handleChange}
+                placeholder="vendor@example.com"
+                autoComplete="off"
+                autoCapitalize="none"
+                className={inputCls}
+              />
+            </div>
+          )}
 
           {/* Product / Grade + HS Code — hidden for domestic shipments */}
           {!isDomestic && (
@@ -634,35 +636,37 @@ export default function NewOrderForm() {
             <input type="text" name="minimumLoadingWeight" value={form.minimumLoadingWeight} onChange={handleChange} required placeholder="e.g. 20 MT" inputMode="text" className={inputCls} />
           </div>
 
-          {/* Purchase Order Shipping Terms */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Order Shipping Terms</label>
-            <select name="poShippingTerms" value={form.poShippingTerms} onChange={handleChange} className={inputCls}>
-              <option value="">Select shipping terms</option>
-              {(isDomestic ? SHIPPING_TERMS_DOMESTIC : SHIPPING_TERMS_EXPORT).map((t) => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          </div>
+          {/* Purchase Order Shipping Terms — shown once logistics manager selected */}
+          {form.logisticsManager && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Order Shipping Terms</label>
+              <select name="poShippingTerms" value={form.poShippingTerms} onChange={handleChange} className={inputCls}>
+                <option value="">Select shipping terms</option>
+                {(isDomestic ? SHIPPING_TERMS_DOMESTIC : SHIPPING_TERMS_EXPORT).map((t) => (
+                  <option key={t} value={t}>{t}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
-          {/* Place of Loading — hidden for domestic Delivered shipments */}
-          {!(isDomestic && form.poShippingTerms === "Delivered") && (
+          {/* Place of Loading — shown once shipping terms selected, hidden for domestic Delivered */}
+          {form.poShippingTerms && !(isDomestic && form.poShippingTerms === "Delivered") && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Place of Loading</label>
               <input type="text" name="placeOfLoading" value={form.placeOfLoading} onChange={handleChange} placeholder="Enter FOB location" autoCapitalize="words" className={inputCls} />
             </div>
           )}
 
-          {/* Port / Ramp — hidden for domestic shipments */}
-          {!isDomestic && (
+          {/* Port / Ramp — export only, shown once logistics manager selected */}
+          {form.logisticsManager && !isDomestic && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Export Port / Ramp</label>
               <input type="text" name="portRamp" value={form.portRamp} onChange={handleChange} placeholder="Enter export port or ramp" autoCapitalize="words" className={inputCls} />
             </div>
           )}
 
-          {/* Final Destination */}
-          <div>
+          {/* Final Destination — shown once logistics manager selected */}
+          {form.logisticsManager && <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Final Destination <span className="text-red-500">*</span>
             </label>
@@ -723,10 +727,10 @@ export default function NewOrderForm() {
                 </datalist>
               </>
             )}
-          </div>
+          </div>}
 
-          {/* ICD — hidden for domestic shipments */}
-          {!isDomestic && (
+          {/* ICD — export only, shown once logistics manager selected */}
+          {form.logisticsManager && !isDomestic && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">ICD</label>
               <input type="text" name="icd" value={form.icd} onChange={handleChange} placeholder="Enter ICD" autoCapitalize="words" className={inputCls} />
