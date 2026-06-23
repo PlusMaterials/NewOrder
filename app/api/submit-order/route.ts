@@ -3,7 +3,12 @@ import { google } from "googleapis";
 import nodemailer from "nodemailer";
 import { Readable } from "stream";
 
-const SHEET_HEADERS = [
+// Columns A–D are filled by the team on individual sheets; E onwards is form data
+export const SHEET_HEADERS = [
+  "SO Number",
+  "SO Status",
+  "Invoice Date",
+  "Cut-off Date",
   "Timestamp",
   "Tracking #",
   "Order #",
@@ -37,6 +42,14 @@ const SHEET_HEADERS = [
   "Pictures",
 ];
 
+// Map logistics manager email → individual sheet name
+const LOGISTICS_SHEET: Record<string, string> = {
+  "sumera.kajani@plusmaterials.com": "Sumera",
+  "rita@plusmaterials.com": "Rita",
+  "Sahil@plusmaterials.com": "Sahil",
+  "farida.lakhani@plusmaterials.com": "Farida",
+};
+
 const NAME_MAP: Record<string, string> = {
   "murad@plusmaterials.com": "Murad",
   "zoeb@plusmaterials.com": "Zoeb",
@@ -67,19 +80,25 @@ function getAuth() {
   });
 }
 
+// Count rows across all individual sheets to determine next tracking number
 async function getNextTrackingNumber(auth: ReturnType<typeof getAuth>): Promise<number> {
   const sheets = google.sheets({ version: "v4", auth });
   const sheetId = process.env.GOOGLE_SHEET_ID!;
-
-  const res = await sheets.spreadsheets.values.get({
-    spreadsheetId: sheetId,
-    range: "Sheet1!A:A",
-  });
-
-  const rows = res.data.values ?? [];
-  // rows[0] is the header, so data rows start at index 1
-  const dataRowCount = Math.max(0, rows.length - 1);
-  return 1001 + dataRowCount;
+  const sheetNames = ["Sumera", "Rita", "Sahil", "Farida", "Other"];
+  let total = 0;
+  for (const name of sheetNames) {
+    try {
+      const res = await sheets.spreadsheets.values.get({
+        spreadsheetId: sheetId,
+        range: `${name}!F:F`, // Tracking # column
+      });
+      const rows = res.data.values ?? [];
+      total += Math.max(0, rows.length - 1); // subtract header row
+    } catch {
+      // sheet doesn't exist yet — skip
+    }
+  }
+  return 1001 + total;
 }
 
 async function createDriveFolder(
@@ -88,7 +107,6 @@ async function createDriveFolder(
   parentFolderId: string
 ): Promise<string> {
   const drive = google.drive({ version: "v3", auth });
-
   const res = await drive.files.create({
     supportsAllDrives: true,
     requestBody: {
@@ -98,7 +116,6 @@ async function createDriveFolder(
     },
     fields: "id",
   });
-
   return res.data.id!;
 }
 
@@ -110,44 +127,53 @@ async function uploadFileToDrive(
   const drive = google.drive({ version: "v3", auth });
   const buffer = Buffer.from(await file.arrayBuffer());
   const stream = Readable.from(buffer);
-
   const res = await drive.files.create({
     supportsAllDrives: true,
     requestBody: { name: file.name, parents: [folderId] },
     media: { mimeType: file.type || "application/octet-stream", body: stream },
     fields: "id,webViewLink",
   });
-
   await drive.permissions.create({
     fileId: res.data.id!,
     supportsAllDrives: true,
     requestBody: { role: "reader", type: "anyone" },
   });
-
   return res.data.webViewLink || `https://drive.google.com/file/d/${res.data.id}/view`;
 }
 
-async function syncHeaders(auth: ReturnType<typeof getAuth>) {
+// Ensure an individual sheet exists and has the correct headers
+async function ensureIndividualSheet(auth: ReturnType<typeof getAuth>, sheetName: string) {
   const sheets = google.sheets({ version: "v4", auth });
   const sheetId = process.env.GOOGLE_SHEET_ID!;
+
+  const spreadsheet = await sheets.spreadsheets.get({ spreadsheetId: sheetId });
+  const exists = spreadsheet.data.sheets?.some((s) => s.properties?.title === sheetName);
+
+  if (!exists) {
+    await sheets.spreadsheets.batchUpdate({
+      spreadsheetId: sheetId,
+      requestBody: { requests: [{ addSheet: { properties: { title: sheetName } } }] },
+    });
+  }
+
+  // Always keep headers in sync
   await sheets.spreadsheets.values.update({
     spreadsheetId: sheetId,
-    range: "Sheet1!A1",
+    range: `${sheetName}!A1`,
     valueInputOption: "RAW",
     requestBody: { values: [SHEET_HEADERS] },
   });
 }
 
-async function appendToSheet(auth: ReturnType<typeof getAuth>, row: string[]) {
+async function appendToIndividualSheet(
+  auth: ReturnType<typeof getAuth>,
+  sheetName: string,
+  row: string[]
+) {
   const sheets = google.sheets({ version: "v4", auth });
-  const sheetId = process.env.GOOGLE_SHEET_ID!;
-
-  // Always keep headers in sync with SHEET_HEADERS
-  await syncHeaders(auth);
-
   await sheets.spreadsheets.values.append({
-    spreadsheetId: sheetId,
-    range: "Sheet1!A:AC",
+    spreadsheetId: process.env.GOOGLE_SHEET_ID!,
+    range: `${sheetName}!A:AI`,
     valueInputOption: "RAW",
     requestBody: { values: [row] },
   });
@@ -174,7 +200,7 @@ function buildEmailHtml(
 <head><meta charset="utf-8"></head>
 <body style="font-family:Arial,sans-serif;background:#f9fafb;margin:0;padding:24px">
   <div style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
-    <div style="background:#2563eb;padding:24px 32px">
+    <div style="background:#0077B2;padding:24px 32px">
       <h1 style="color:#fff;margin:0;font-size:20px">New Order Submission</h1>
       <p style="color:#bfdbfe;margin:4px 0 0;font-size:13px">Plus Materials — ${new Date().toLocaleString()}</p>
     </div>
@@ -244,9 +270,7 @@ async function sendEmail(
   fileLinks: Record<string, string>,
   attachments: FileAttachment[]
 ) {
-  // Collect all selected people's emails
   const toSet = new Set<string>();
-
   if (fields.buyingManager) toSet.add(fields.buyingManager);
   if (fields.salesRepresentative) toSet.add(fields.salesRepresentative);
   if (fields.secondaryAccountManagers) {
@@ -258,19 +282,14 @@ async function sendEmail(
     toSet.add(fields.logisticsManagerOtherEmail);
   }
 
-  const toList = Array.from(toSet).join(", ");
-
   const transporter = nodemailer.createTransport({
     service: "gmail",
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
+    auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
   });
 
   await transporter.sendMail({
     from: `"Plus Materials Orders" <${process.env.EMAIL_USER}>`,
-    to: toList,
+    to: Array.from(toSet).join(", "),
     cc: CC_ALWAYS.join(", "),
     subject: `[#${trackingNumber}] New Order — ${fields.vendor || "Unknown Vendor"} · ${fields.department || ""}`,
     html: buildEmailHtml(trackingNumber, fields, fileLinks),
@@ -320,10 +339,8 @@ export async function POST(request: NextRequest) {
     const auth = getAuth();
     const rootFolderId = process.env.GOOGLE_DRIVE_FOLDER_ID!;
 
-    // Assign tracking number first so the Drive folder name matches
     const trackingNumber = await getNextTrackingNumber(auth);
 
-    // Create a subfolder for this order's attachments
     const orderFolderId = await createDriveFolder(
       auth,
       `#${trackingNumber} — ${fields.vendor || "Order"}`,
@@ -368,10 +385,18 @@ export async function POST(request: NextRequest) {
         ? `${fields.logisticsManagerOtherName} <${fields.logisticsManagerOtherEmail}>`
         : displayName(fields.logisticsManager);
 
+    // Determine which individual sheet this submission belongs to
+    const targetSheet = LOGISTICS_SHEET[fields.logisticsManager] ?? "Other";
+
+    // Row: A–D empty (team fills these), E–AI form data
     const row = [
+      "", // SO Number
+      "", // SO Status
+      "", // Invoice Date
+      "", // Cut-off Date
       new Date().toISOString(),
       String(trackingNumber),
-      "", // Order # — left blank for the team to fill in
+      "", // Order # — filled by team
       displayName(fields.buyingManager),
       displayName(fields.salesRepresentative),
       fields.secondaryAccountManagers.split(", ").map(displayName).join(", "),
@@ -402,7 +427,8 @@ export async function POST(request: NextRequest) {
       picLinks.join(", "),
     ];
 
-    await appendToSheet(auth, row);
+    await ensureIndividualSheet(auth, targetSheet);
+    await appendToIndividualSheet(auth, targetSheet, row);
     await sendEmail(trackingNumber, fields, fileLinks, attachments);
 
     return NextResponse.json({ success: true, trackingNumber });

@@ -1,39 +1,6 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
-
-const SHEET_HEADERS = [
-  "Timestamp",
-  "Tracking #",
-  "Order #",
-  "Buyer",
-  "Sales Rep",
-  "Secondary Account Managers",
-  "Logistics Manager",
-  "Department",
-  "Vendor",
-  "Vendor Contact Email",
-  "Place of Loading",
-  "Export Port / Ramp",
-  "Product / Grade",
-  "HS Code",
-  "Purchase Order Items",
-  "Pricing",
-  "Customer Booking",
-  "Customer PO",
-  "Min Loading Weight",
-  "Purchase Order Shipping Terms",
-  "Final Destination",
-  "ICD",
-  "Container / Load Quantity",
-  "Target Ship Date",
-  "Customer",
-  "Sales Order Description",
-  "Sales Order Price",
-  "Sales Order QTY (MT)",
-  "Payment Terms",
-  "Additional Notes",
-  "Pictures",
-];
+import { SHEET_HEADERS } from "../submit-order/route";
 
 export async function GET() {
   try {
@@ -46,12 +13,16 @@ export async function GET() {
     });
 
     const sheets = google.sheets({ version: "v4", auth });
+    const sheetId = process.env.GOOGLE_SHEET_ID!;
 
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: process.env.GOOGLE_SHEET_ID!,
-      range: "Sheet1!A1",
-      valueInputOption: "RAW",
-      requestBody: { values: [SHEET_HEADERS] },
+    // Sync headers on all individual sheets and Sheet1
+    const targets = ["Sumera", "Rita", "Sahil", "Farida", "Other", "Sheet1"];
+    await sheets.spreadsheets.values.batchUpdate({
+      spreadsheetId: sheetId,
+      requestBody: {
+        valueInputOption: "RAW",
+        data: targets.map((name) => ({ range: `${name}!A1`, values: [SHEET_HEADERS] })),
+      },
     });
 
     return NextResponse.json({ success: true, headers: SHEET_HEADERS });
