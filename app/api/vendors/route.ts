@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
 
-// Columns I and J in the sheet are Vendor and Vendor Contact Email
+// Columns M and N in Master List are Vendor and Vendor Contact Email
 export async function GET() {
   try {
     const auth = new google.auth.GoogleAuth({
@@ -15,7 +15,7 @@ export async function GET() {
     const sheets = google.sheets({ version: "v4", auth });
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID!,
-      range: "Sheet1!I:J",
+      range: "Master List!M:N",
     });
 
     const rows = res.data.values ?? [];

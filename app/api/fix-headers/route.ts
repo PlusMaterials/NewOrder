@@ -16,7 +16,7 @@ export async function GET() {
     const sheetId = process.env.GOOGLE_SHEET_ID!;
 
     // Sync headers on all individual sheets and Sheet1
-    const targets = ["Sumera", "Rita", "Sahil", "Farida", "Other", "Sheet1"];
+    const targets = ["Sumera", "Rita", "Sahil", "Farida", "Other", "Master List"];
     await sheets.spreadsheets.values.batchUpdate({
       spreadsheetId: sheetId,
       requestBody: {

@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { google } from "googleapis";
 
-// Column T in the sheet is Final Destination (index 19, 1-based = column T)
+// Column Y in Master List is Final Destination
 export async function GET() {
   try {
     const auth = new google.auth.GoogleAuth({
@@ -15,7 +15,7 @@ export async function GET() {
     const sheets = google.sheets({ version: "v4", auth });
     const res = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEET_ID!,
-      range: "Sheet1!T:T",
+      range: "Master List!Y:Y",
     });
 
     const rows = res.data.values ?? [];
