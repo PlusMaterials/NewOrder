@@ -398,6 +398,30 @@ export default function NewOrderForm() {
         <div className="px-6 py-4 flex items-center gap-3" style={{backgroundColor: '#0077B2'}}>
           <img src="/favicon.png" alt="Plus Materials" className="h-10 w-10 object-contain flex-shrink-0" />
           <h1 className="text-xl font-bold text-white flex-1">New Order Form</h1>
+          {/* Tracking sheet link */}
+          <a
+            href={`https://docs.google.com/spreadsheets/d/${process.env.NEXT_PUBLIC_GOOGLE_SHEET_ID}/edit`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Open tracking sheet"
+            className="text-blue-200 hover:text-white transition-colors touch-manipulation p-1"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125" />
+            </svg>
+          </a>
+          {/* Drive folder link */}
+          <a
+            href="https://drive.google.com/drive/folders/13k8JhCERsCEEQ4U839V0SN4nibSU3lK6"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Open attachments folder"
+            className="text-blue-200 hover:text-white transition-colors touch-manipulation p-1"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
+            </svg>
+          </a>
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/login" })}
