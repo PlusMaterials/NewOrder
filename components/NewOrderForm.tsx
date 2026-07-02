@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { signOut } from "next-auth/react";
 
 interface VendorSuggestion {
@@ -169,7 +169,7 @@ function FileUploadButton({
   label,
 }: {
   id: string;
-  inputRef: React.RefObject<HTMLInputElement | null>;
+  inputRef?: React.RefObject<HTMLInputElement | null>;
   accept: string;
   multiple?: boolean;
   capture?: "environment" | "user";
@@ -186,11 +186,15 @@ function FileUploadButton({
         multiple={multiple}
         capture={capture}
         className="sr-only"
-        onChange={(e) => onChange(e.target.files)}
+        onChange={(e) => {
+          onChange(e.target.files);
+          // Reset so selecting the same file again re-triggers onChange
+          e.target.value = "";
+        }}
       />
       <label
         htmlFor={id}
-        className="flex items-center justify-center gap-2 w-full cursor-pointer rounded-lg border border-dashed border-gray-300 bg-gray-50 py-4 px-4 text-sm font-medium text-blue-600 hover:bg-blue-50 active:bg-blue-100 transition-colors touch-manipulation select-none"
+        className="flex items-center justify-center gap-2 w-full cursor-pointer rounded-lg border border-dashed border-gray-300 bg-gray-50 py-4 px-4 text-sm font-medium text-[#0077B2] hover:bg-blue-50 active:bg-blue-100 transition-colors touch-manipulation select-none"
       >
         <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-8m0 0-3 3m3-3 3 3M4.5 19.5h15a1.5 1.5 0 0 0 0-3H18l-1.5-3H7.5L6 16.5H4.5a1.5 1.5 0 0 0 0 3Z" />
@@ -198,6 +202,16 @@ function FileUploadButton({
         {label}
       </label>
     </>
+  );
+}
+
+// Section heading to break the long form into scannable groups
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-3 pt-2">
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-[#0077B2]">{children}</h2>
+      <div className="flex-1 border-t border-gray-200" />
+    </div>
   );
 }
 
@@ -209,9 +223,6 @@ export default function NewOrderForm() {
   const [vendorSuggestions, setVendorSuggestions] = useState<VendorSuggestion[]>([]);
   const [exportDestinations, setExportDestinations] = useState<string[]>([]);
   const [domesticOtherDestinations, setDomesticOtherDestinations] = useState<string[]>([]);
-  const customerBookingRef = useRef<HTMLInputElement>(null);
-  const customerPORef = useRef<HTMLInputElement>(null);
-  const picturesRef = useRef<HTMLInputElement>(null);
 
   const isDomestic = form.logisticsManager === DOMESTIC_LOGISTICS_EMAIL;
   // Hide sales/customer fields when a fixed domestic destination is chosen (not "Other")
@@ -231,14 +242,13 @@ export default function NewOrderForm() {
     }));
   }, [isDomestic]);
 
+  // Load autocomplete data (vendors + destinations) concurrently on mount
   useEffect(() => {
     fetch("/api/vendors")
       .then((res) => (res.ok ? res.json() : { vendors: [] }))
       .then((data) => setVendorSuggestions(data.vendors ?? []))
       .catch(() => setVendorSuggestions([]));
-  }, []);
 
-  useEffect(() => {
     fetch("/api/destinations")
       .then((res) => (res.ok ? res.json() : { destinations: [], domesticOther: [] }))
       .then((data) => {
@@ -358,9 +368,6 @@ export default function NewOrderForm() {
     setStatus("idle");
     setErrorMsg("");
     setTrackingNumber(null);
-    if (customerBookingRef.current) customerBookingRef.current.value = "";
-    if (customerPORef.current) customerPORef.current.value = "";
-    if (picturesRef.current) picturesRef.current.value = "";
   };
 
   if (status === "success") {
@@ -373,12 +380,12 @@ export default function NewOrderForm() {
         </div>
         <h2 className="text-2xl font-semibold text-gray-800 mb-2">Order Submitted</h2>
         {trackingNumber && (
-          <p className="text-blue-600 font-semibold text-lg mb-1">Tracking #{trackingNumber}</p>
+          <p className="text-[#0077B2] font-semibold text-lg mb-1">Tracking #{trackingNumber}</p>
         )}
         <p className="text-gray-500 mb-6">Your order has been saved and a confirmation email has been sent.</p>
         <button
           onClick={handleReset}
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium touch-manipulation"
+          className="bg-[#0077B2] text-white px-6 py-3 rounded-lg hover:bg-[#005f8e] transition-colors text-sm font-medium touch-manipulation"
         >
           Submit Another Order
         </button>
@@ -432,6 +439,8 @@ export default function NewOrderForm() {
         </div>
 
         <form id="order-form" onSubmit={handleSubmit} className="px-5 py-6 space-y-6">
+
+          <SectionHeading>Team</SectionHeading>
 
           {/* Buyer */}
           <div>
@@ -553,7 +562,7 @@ export default function NewOrderForm() {
             </div>
           </div>
 
-          <hr className="border-gray-100" />
+          <SectionHeading>Order Details</SectionHeading>
 
           {/* Vendor */}
           <div>
@@ -785,7 +794,7 @@ export default function NewOrderForm() {
             </div>
           )}
 
-          {!hideCustomerSection && <hr className="border-gray-100" />}
+          {!hideCustomerSection && <SectionHeading>Sales Order</SectionHeading>}
 
           {!hideCustomerSection && (
             <>
@@ -831,14 +840,13 @@ export default function NewOrderForm() {
             />
           </div>
 
-          <hr className="border-gray-100" />
+          <SectionHeading>Attachments</SectionHeading>
 
           {!hideCustomerSection && (
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">Customer Booking</label>
               <FileUploadButton
                 id="customerBooking"
-                inputRef={customerBookingRef}
                 accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
                 onChange={(files) => set("customerBooking", files?.[0] ?? null)}
                 label={form.customerBooking ? form.customerBooking.name : "Tap to choose file"}
@@ -851,7 +859,6 @@ export default function NewOrderForm() {
             <label className="block text-sm font-medium text-gray-700 mb-2">Customer PO</label>
             <FileUploadButton
               id="customerPO"
-              inputRef={customerPORef}
               accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
               onChange={(files) => set("customerPO", files?.[0] ?? null)}
               label={form.customerPO ? form.customerPO.name : "Tap to choose file"}
@@ -865,7 +872,6 @@ export default function NewOrderForm() {
               {/* Camera shortcut for mobile */}
               <FileUploadButton
                 id="picturesCamera"
-                inputRef={{ current: null }}
                 accept="image/*"
                 capture="environment"
                 onChange={(files) => {
@@ -877,7 +883,6 @@ export default function NewOrderForm() {
               {/* Files + photo library */}
               <FileUploadButton
                 id="picturesLibrary"
-                inputRef={picturesRef}
                 accept="image/*,application/pdf"
                 multiple
                 onChange={(files) => {
@@ -923,7 +928,7 @@ export default function NewOrderForm() {
             type="submit"
             form="order-form"
             disabled={status === "submitting"}
-            className="w-full bg-blue-600 text-white py-3.5 px-6 rounded-xl font-semibold text-base hover:bg-blue-700 active:bg-blue-800 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
+            className="w-full bg-[#0077B2] text-white py-3.5 px-6 rounded-xl font-semibold text-base hover:bg-[#005f8e] active:bg-[#004d73] transition-colors focus:outline-none focus:ring-2 focus:ring-[#0077B2] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
           >
             {status === "submitting" ? "Submitting…" : "Submit Order"}
           </button>

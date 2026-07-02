@@ -85,20 +85,33 @@ async function getNextTrackingNumber(auth: ReturnType<typeof getAuth>): Promise<
   const sheets = google.sheets({ version: "v4", auth });
   const sheetId = process.env.GOOGLE_SHEET_ID!;
   const sheetNames = ["Sumera", "Rita", "Sahil", "Farida", "Other"];
-  let total = 0;
-  for (const name of sheetNames) {
-    try {
-      const res = await sheets.spreadsheets.values.get({
-        spreadsheetId: sheetId,
-        range: `${name}!F:F`, // Tracking # column
-      });
-      const rows = res.data.values ?? [];
-      total += Math.max(0, rows.length - 1); // subtract header row
-    } catch {
-      // sheet doesn't exist yet — skip
+  try {
+    // Single batchGet instead of one request per sheet
+    const res = await sheets.spreadsheets.values.batchGet({
+      spreadsheetId: sheetId,
+      ranges: sheetNames.map((name) => `${name}!F:F`), // Tracking # column
+    });
+    const total = (res.data.valueRanges ?? []).reduce(
+      (sum, vr) => sum + Math.max(0, (vr.values?.length ?? 0) - 1), // subtract header row
+      0
+    );
+    return 1001 + total;
+  } catch {
+    // batchGet fails if any sheet is missing — fall back to per-sheet reads
+    let total = 0;
+    for (const name of sheetNames) {
+      try {
+        const res = await sheets.spreadsheets.values.get({
+          spreadsheetId: sheetId,
+          range: `${name}!F:F`,
+        });
+        total += Math.max(0, (res.data.values?.length ?? 0) - 1);
+      } catch {
+        // sheet doesn't exist yet — skip
+      }
     }
+    return 1001 + total;
   }
-  return 1001 + total;
 }
 
 async function createDriveFolder(
@@ -349,30 +362,27 @@ export async function POST(request: NextRequest) {
 
     const customerBookingFile = formData.get("customerBooking") as File | null;
     const customerPOFile = formData.get("customerPO") as File | null;
-    const pictureFiles = formData.getAll("pictures") as File[];
+    const pictureFiles = (formData.getAll("pictures") as File[]).filter((p) => p.size);
 
-    let customerBookingLink = "";
-    let customerPOLink = "";
-    const picLinks: string[] = [];
-    const attachments: FileAttachment[] = [];
+    // Read all file buffers and upload everything to Drive concurrently
+    const bufferFor = async (file: File): Promise<FileAttachment> => ({
+      filename: file.name,
+      content: Buffer.from(await file.arrayBuffer()),
+      contentType: file.type || "application/octet-stream",
+    });
 
-    if (customerBookingFile?.size) {
-      const buf = Buffer.from(await customerBookingFile.arrayBuffer());
-      attachments.push({ filename: customerBookingFile.name, content: buf, contentType: customerBookingFile.type || "application/octet-stream" });
-      customerBookingLink = await uploadFileToDrive(auth, customerBookingFile, orderFolderId);
-    }
-    if (customerPOFile?.size) {
-      const buf = Buffer.from(await customerPOFile.arrayBuffer());
-      attachments.push({ filename: customerPOFile.name, content: buf, contentType: customerPOFile.type || "application/octet-stream" });
-      customerPOLink = await uploadFileToDrive(auth, customerPOFile, orderFolderId);
-    }
-    for (const pic of pictureFiles) {
-      if (pic.size) {
-        const buf = Buffer.from(await pic.arrayBuffer());
-        attachments.push({ filename: pic.name, content: buf, contentType: pic.type || "image/jpeg" });
-        picLinks.push(await uploadFileToDrive(auth, pic, orderFolderId));
-      }
-    }
+    const [customerBookingLink, customerPOLink, picLinks, attachments] = await Promise.all([
+      customerBookingFile?.size ? uploadFileToDrive(auth, customerBookingFile, orderFolderId) : Promise.resolve(""),
+      customerPOFile?.size ? uploadFileToDrive(auth, customerPOFile, orderFolderId) : Promise.resolve(""),
+      Promise.all(pictureFiles.map((pic) => uploadFileToDrive(auth, pic, orderFolderId))),
+      Promise.all(
+        [
+          ...(customerBookingFile?.size ? [customerBookingFile] : []),
+          ...(customerPOFile?.size ? [customerPOFile] : []),
+          ...pictureFiles,
+        ].map(bufferFor)
+      ),
+    ]);
 
     const fileLinks = {
       customerBooking: customerBookingLink,
@@ -427,9 +437,13 @@ export async function POST(request: NextRequest) {
       picLinks.join(", "),
     ];
 
-    await ensureIndividualSheet(auth, targetSheet);
-    await appendToIndividualSheet(auth, targetSheet, row);
-    await sendEmail(trackingNumber, fields, fileLinks, attachments);
+    // Sheet append (after ensuring the sheet exists) and email are independent — run them in parallel
+    await Promise.all([
+      ensureIndividualSheet(auth, targetSheet).then(() =>
+        appendToIndividualSheet(auth, targetSheet, row)
+      ),
+      sendEmail(trackingNumber, fields, fileLinks, attachments),
+    ]);
 
     return NextResponse.json({ success: true, trackingNumber });
   } catch (err) {
