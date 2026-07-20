@@ -9,13 +9,13 @@ function LoginContent() {
   const error = searchParams.get("error");
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-[#f5f8fb] flex items-center justify-center px-4">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden w-full max-w-sm">
-        <div className="bg-blue-600 px-8 py-6 flex items-center gap-4">
-          <img src="/logo.png" alt="Plus Materials" className="h-12 w-12 rounded-lg flex-shrink-0" />
+        <div className="px-8 py-6 flex items-center gap-4" style={{ backgroundColor: "#0060A5" }}>
+          <img src="/favicon.png" alt="Plus Materials" className="h-11 w-11 object-contain flex-shrink-0" />
           <div>
-            <h1 className="text-xl font-bold text-white">New Order</h1>
-            <p className="text-blue-100 text-sm mt-0.5">Plus Materials</p>
+            <h1 className="text-xl font-bold text-white">New Order Form</h1>
+            <p className="text-white/70 text-sm mt-0.5">Plus Materials</p>
           </div>
         </div>
 

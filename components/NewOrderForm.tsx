@@ -194,7 +194,7 @@ function FileUploadButton({
       />
       <label
         htmlFor={id}
-        className="flex items-center justify-center gap-2 w-full cursor-pointer rounded-lg border border-dashed border-gray-300 bg-gray-50 py-4 px-4 text-sm font-medium text-[#0077B2] hover:bg-blue-50 active:bg-blue-100 transition-colors touch-manipulation select-none"
+        className="flex items-center justify-center gap-2 w-full cursor-pointer rounded-lg border border-dashed border-gray-300 bg-gray-50 py-4 px-4 text-sm font-medium text-[#0060A5] hover:bg-[#0060A5]/10 active:bg-[#0060A5]/20 transition-colors touch-manipulation select-none"
       >
         <svg className="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 16v-8m0 0-3 3m3-3 3 3M4.5 19.5h15a1.5 1.5 0 0 0 0-3H18l-1.5-3H7.5L6 16.5H4.5a1.5 1.5 0 0 0 0 3Z" />
@@ -209,7 +209,7 @@ function FileUploadButton({
 function SectionHeading({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex items-center gap-3 pt-2">
-      <h2 className="text-xs font-semibold uppercase tracking-wider text-[#0077B2]">{children}</h2>
+      <h2 className="text-xs font-semibold uppercase tracking-wider text-[#0060A5]">{children}</h2>
       <div className="flex-1 border-t border-gray-200" />
     </div>
   );
@@ -380,12 +380,12 @@ export default function NewOrderForm() {
         </div>
         <h2 className="text-2xl font-semibold text-gray-800 mb-2">Order Submitted</h2>
         {trackingNumber && (
-          <p className="text-[#0077B2] font-semibold text-lg mb-1">Tracking #{trackingNumber}</p>
+          <p className="text-[#0060A5] font-semibold text-lg mb-1">Tracking #{trackingNumber}</p>
         )}
         <p className="text-gray-500 mb-6">Your order has been saved and a confirmation email has been sent.</p>
         <button
           onClick={handleReset}
-          className="bg-[#0077B2] text-white px-6 py-3 rounded-lg hover:bg-[#005f8e] transition-colors text-sm font-medium touch-manipulation"
+          className="bg-[#FFC700] text-[#10233F] px-6 py-3 rounded-lg hover:bg-[#E6B300] transition-colors text-sm font-bold touch-manipulation"
         >
           Submit Another Order
         </button>
@@ -394,7 +394,7 @@ export default function NewOrderForm() {
   }
 
   // Tall inputs for comfortable touch interaction
-  const inputCls = "w-full border border-gray-300 rounded-lg px-3 py-3 text-base text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent touch-manipulation";
+  const inputCls = "w-full border border-gray-300 rounded-lg px-3 py-3 text-base text-[#10233F] focus:outline-none focus:ring-2 focus:ring-[#0060A5] focus:border-transparent touch-manipulation";
 
   // Full-row label wrapper for checkboxes/radios — entire row is tappable
   const checkRowCls = "flex items-center gap-3 cursor-pointer py-2 px-3 rounded-lg hover:bg-gray-50 active:bg-gray-100 touch-manipulation -mx-3";
@@ -402,7 +402,7 @@ export default function NewOrderForm() {
   return (
     <div className="max-w-2xl mx-auto pb-24">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="px-6 py-4 flex items-center gap-3" style={{backgroundColor: '#0077B2'}}>
+        <div className="px-6 py-4 flex items-center gap-3" style={{backgroundColor: '#0060A5'}}>
           <img src="/favicon.png" alt="Plus Materials" className="h-10 w-10 object-contain flex-shrink-0" />
           <h1 className="text-xl font-bold text-white flex-1">New Order Form</h1>
           {/* Tracking sheet link */}
@@ -411,7 +411,7 @@ export default function NewOrderForm() {
             target="_blank"
             rel="noopener noreferrer"
             title="Open tracking sheet"
-            className="text-blue-200 hover:text-white transition-colors touch-manipulation p-1"
+            className="text-white/70 hover:text-white transition-colors touch-manipulation p-1"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3.375 19.5h17.25m-17.25 0a1.125 1.125 0 0 1-1.125-1.125M3.375 19.5h7.5c.621 0 1.125-.504 1.125-1.125m-9.75 0V5.625m0 12.75v-1.5c0-.621.504-1.125 1.125-1.125m18.375 2.625V5.625m0 12.75c0 .621-.504 1.125-1.125 1.125m1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125m0 3.75h-7.5A1.125 1.125 0 0 1 12 18.375m9.75-12.75c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125m19.5 0v1.5c0 .621-.504 1.125-1.125 1.125M2.25 5.625v1.5c0 .621.504 1.125 1.125 1.125m0 0h17.25m-17.25 0h7.5c.621 0 1.125.504 1.125 1.125M3.375 8.25c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125m17.25-3.75h-7.5c-.621 0-1.125.504-1.125 1.125m8.625-1.125c.621 0 1.125.504 1.125 1.125v1.5c0 .621-.504 1.125-1.125 1.125" />
@@ -423,7 +423,7 @@ export default function NewOrderForm() {
             target="_blank"
             rel="noopener noreferrer"
             title="Open attachments folder"
-            className="text-blue-200 hover:text-white transition-colors touch-manipulation p-1"
+            className="text-white/70 hover:text-white transition-colors touch-manipulation p-1"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
@@ -432,7 +432,7 @@ export default function NewOrderForm() {
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="text-blue-200 hover:text-white text-xs font-medium transition-colors touch-manipulation py-2 px-1"
+            className="text-white/70 hover:text-white text-xs font-medium transition-colors touch-manipulation py-2 px-1"
           >
             Sign out
           </button>
@@ -478,7 +478,7 @@ export default function NewOrderForm() {
                     type="checkbox"
                     checked={form.secondaryAccountManagers.includes(m.email)}
                     onChange={() => toggleCheckbox(m.email)}
-                    className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 flex-shrink-0"
+                    className="w-5 h-5 text-[#0060A5] accent-[#0060A5] border-gray-300 rounded focus:ring-[#0060A5] flex-shrink-0"
                   />
                   <span className="text-sm text-gray-700">{m.name}</span>
                 </label>
@@ -498,7 +498,7 @@ export default function NewOrderForm() {
                     value={m.email}
                     checked={form.logisticsManager === m.email}
                     onChange={handleChange}
-                    className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0"
+                    className="w-5 h-5 text-[#0060A5] accent-[#0060A5] border-gray-300 focus:ring-[#0060A5] flex-shrink-0"
                   />
                   <span className="text-sm text-gray-700">{m.name}</span>
                 </label>
@@ -510,7 +510,7 @@ export default function NewOrderForm() {
                   value="other"
                   checked={form.logisticsManager === "other"}
                   onChange={handleChange}
-                  className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0"
+                  className="w-5 h-5 text-[#0060A5] accent-[#0060A5] border-gray-300 focus:ring-[#0060A5] flex-shrink-0"
                 />
                 <span className="text-sm text-gray-700">Other</span>
               </label>
@@ -554,7 +554,7 @@ export default function NewOrderForm() {
                     checked={form.department === dept}
                     onChange={handleChange}
                     required
-                    className="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0"
+                    className="w-5 h-5 text-[#0060A5] accent-[#0060A5] border-gray-300 focus:ring-[#0060A5] flex-shrink-0"
                   />
                   <span className="text-sm text-gray-700">{dept}</span>
                 </label>
@@ -928,7 +928,7 @@ export default function NewOrderForm() {
             type="submit"
             form="order-form"
             disabled={status === "submitting"}
-            className="w-full bg-[#0077B2] text-white py-3.5 px-6 rounded-xl font-semibold text-base hover:bg-[#005f8e] active:bg-[#004d73] transition-colors focus:outline-none focus:ring-2 focus:ring-[#0077B2] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
+            className="w-full bg-[#FFC700] text-[#10233F] py-3.5 px-6 rounded-xl font-bold text-base hover:bg-[#E6B300] active:bg-[#d9a800] transition-colors focus:outline-none focus:ring-2 focus:ring-[#0060A5] focus:ring-offset-2 disabled:opacity-60 disabled:cursor-not-allowed touch-manipulation"
           >
             {status === "submitting" ? "Submitting…" : "Submit Order"}
           </button>
