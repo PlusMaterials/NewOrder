@@ -304,7 +304,7 @@ async function sendEmail(
     from: `"Plus Materials Orders" <${process.env.EMAIL_USER}>`,
     to: Array.from(toSet).join(", "),
     cc: CC_ALWAYS.join(", "),
-    subject: `[#${trackingNumber}] New Order — ${fields.vendor || "Unknown Vendor"} · ${fields.department || ""}`,
+    subject: `New Order · Tracking #${trackingNumber} — ${fields.vendor || "Unknown Vendor"} · ${fields.department || ""}`,
     html: buildEmailHtml(trackingNumber, fields, fileLinks),
     attachments: attachments.map((a) => ({
       filename: a.filename,
