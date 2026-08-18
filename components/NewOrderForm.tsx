@@ -343,6 +343,8 @@ export default function NewOrderForm() {
       fd.append("soQty", form.soQty);
       fd.append("paymentTerms", form.paymentTerms);
       fd.append("additionalNotes", form.additionalNotes);
+      // Sales Order section is shown (load requires a sales order) when not hidden
+      fd.append("requiresSalesOrder", (!hideCustomerSection).toString());
 
       if (form.customerBooking) fd.append("customerBooking", form.customerBooking);
       if (form.customerPO) fd.append("customerPO", form.customerPO);

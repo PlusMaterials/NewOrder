@@ -271,6 +271,9 @@ const CC_ALWAYS = [
   "sameera@plusmaterials.com",
 ];
 
+// CC'd only on loads that require a sales order (Sales Order section shown)
+const CC_SALES_ORDER = ["abroo@plusmaterials.com"];
+
 interface FileAttachment {
   filename: string;
   content: Buffer;
@@ -295,6 +298,10 @@ async function sendEmail(
     toSet.add(fields.logisticsManagerOtherEmail);
   }
 
+  // Add Abroo to CC only when this load requires a sales order
+  const ccList = [...CC_ALWAYS];
+  if (fields.requiresSalesOrder === "true") ccList.push(...CC_SALES_ORDER);
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
@@ -303,7 +310,7 @@ async function sendEmail(
   await transporter.sendMail({
     from: `"Plus Materials Orders" <${process.env.EMAIL_USER}>`,
     to: Array.from(toSet).join(", "),
-    cc: CC_ALWAYS.join(", "),
+    cc: ccList.join(", "),
     subject: `New Order · Tracking #${trackingNumber} — ${fields.vendor || "Unknown Vendor"} · ${fields.department || ""}`,
     html: buildEmailHtml(trackingNumber, fields, fileLinks),
     attachments: attachments.map((a) => ({
@@ -347,6 +354,7 @@ export async function POST(request: NextRequest) {
       soQty: getString("soQty"),
       paymentTerms: getString("paymentTerms"),
       additionalNotes: getString("additionalNotes"),
+      requiresSalesOrder: getString("requiresSalesOrder"),
     };
 
     const auth = getAuth();
