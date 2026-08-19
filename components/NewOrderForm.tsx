@@ -215,6 +215,11 @@ function SectionHeading({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Muted marker appended to optional field labels
+function Optional() {
+  return <span className="text-gray-400 font-normal"> (optional)</span>;
+}
+
 export default function NewOrderForm() {
   const [form, setForm] = useState<FormState>(initial);
   const [status, setStatus] = useState<"idle" | "submitting" | "success" | "error">("idle");
@@ -442,6 +447,10 @@ export default function NewOrderForm() {
 
         <form id="order-form" onSubmit={handleSubmit} className="px-5 py-6 space-y-6">
 
+          <p className="text-xs text-gray-500">
+            Fields marked <span className="text-red-500">*</span> are required. All others are optional.
+          </p>
+
           <SectionHeading>Team</SectionHeading>
 
           {/* Buyer */}
@@ -472,7 +481,7 @@ export default function NewOrderForm() {
 
           {/* Secondary Account Manager */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Account Manager</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Secondary Account Manager <Optional /></label>
             <div className="space-y-0.5">
               {TEAM_MEMBERS.filter((m) => m.email !== form.buyingManager && m.email !== form.salesRepresentative).map((m) => (
                 <label key={m.email} className={checkRowCls}>
@@ -490,7 +499,7 @@ export default function NewOrderForm() {
 
           {/* Logistics Manager */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Logistics Manager</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Logistics Manager <Optional /></label>
             <div className="space-y-0.5">
               {LOGISTICS_MEMBERS.map((m) => (
                 <label key={m.email} className={checkRowCls}>
@@ -594,7 +603,7 @@ export default function NewOrderForm() {
           {/* Vendor Contact Email — shown once vendor is entered */}
           {form.vendor.trim() && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Contact Email</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Vendor Contact Email <Optional /></label>
               <input
                 type="email"
                 name="vendorContactEmail"
@@ -623,7 +632,7 @@ export default function NewOrderForm() {
 
               {form.productGrade && (
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">HS Code</label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">HS Code <Optional /></label>
                   <select name="hsCode" value={form.hsCode} onChange={handleChange} className={inputCls}>
                     <option value="">Select HS code</option>
                     {(HS_CODES[form.productGrade] ?? []).map((item, i) => (
@@ -659,7 +668,7 @@ export default function NewOrderForm() {
 
           {/* Pricing */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Pricing</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Pricing <Optional /></label>
             <textarea name="pricing" value={form.pricing} onChange={handleChange} placeholder="Enter pricing" className={`${inputCls} resize-none min-h-[88px]`} />
           </div>
 
@@ -674,7 +683,7 @@ export default function NewOrderForm() {
           {/* Purchase Order Shipping Terms — shown once logistics manager selected */}
           {form.logisticsManager && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Order Shipping Terms</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Order Shipping Terms <Optional /></label>
               <select name="poShippingTerms" value={form.poShippingTerms} onChange={handleChange} className={inputCls}>
                 <option value="">Select shipping terms</option>
                 {(isDomestic ? SHIPPING_TERMS_DOMESTIC : SHIPPING_TERMS_EXPORT).map((t) => (
@@ -687,7 +696,7 @@ export default function NewOrderForm() {
           {/* Place of Loading — shown once shipping terms selected, hidden for domestic Delivered */}
           {form.poShippingTerms && !(isDomestic && form.poShippingTerms === "Delivered") && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Place of Loading</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Place of Loading <Optional /></label>
               <input type="text" name="placeOfLoading" value={form.placeOfLoading} onChange={handleChange} placeholder="Enter FOB location" autoCapitalize="words" className={inputCls} />
             </div>
           )}
@@ -695,7 +704,7 @@ export default function NewOrderForm() {
           {/* Port / Ramp — export only, shown once logistics manager selected */}
           {form.logisticsManager && !isDomestic && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Export Port / Ramp</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Export Port / Ramp <Optional /></label>
               <input type="text" name="portRamp" value={form.portRamp} onChange={handleChange} placeholder="Enter export port or ramp" autoCapitalize="words" className={inputCls} />
             </div>
           )}
@@ -767,7 +776,7 @@ export default function NewOrderForm() {
           {/* ICD — export only, shown once logistics manager selected */}
           {form.logisticsManager && !isDomestic && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">ICD</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">ICD <Optional /></label>
               <input type="text" name="icd" value={form.icd} onChange={handleChange} placeholder="Enter ICD" autoCapitalize="words" className={inputCls} />
             </div>
           )}
@@ -783,14 +792,14 @@ export default function NewOrderForm() {
           {/* Target Ship Date */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Target Ship Date <span className="text-red-500">*</span>
+              Target Ship Date <Optional />
             </label>
             <input type="date" name="targetShipDate" value={form.targetShipDate} onChange={handleChange} className={inputCls} />
           </div>
 
           {!hideCustomerSection && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Customer</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Customer <Optional /></label>
               <p className="text-xs text-gray-400 mb-1">If no confirmed customer, please share tentative for SI</p>
               <input type="text" name="customer" value={form.customer} onChange={handleChange} placeholder="Enter customer name" autoCapitalize="words" className={inputCls} />
             </div>
@@ -802,19 +811,19 @@ export default function NewOrderForm() {
             <>
               {/* Sales Order Description */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Description</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Description <Optional /></label>
                 <textarea name="soDescription" value={form.soDescription} onChange={handleChange} placeholder="Enter sales order description" className={`${inputCls} resize-none min-h-[88px]`} />
               </div>
 
               {/* Sales Order Price */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Price</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order Price <Optional /></label>
                 <textarea name="soPrice" value={form.soPrice} onChange={handleChange} placeholder="Enter sales order price" className={`${inputCls} resize-none min-h-[88px]`} />
               </div>
 
               {/* Sales Order QTY */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order QTY (Weights in MT)</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sales Order QTY (Weights in MT) <Optional /></label>
                 <input type="text" name="soQty" value={form.soQty} onChange={handleChange} placeholder="e.g. 100 MT" inputMode="text" className={inputCls} />
               </div>
             </>
@@ -822,7 +831,7 @@ export default function NewOrderForm() {
 
           {!hideCustomerSection && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Terms</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Payment Terms <Optional /></label>
               <select name="paymentTerms" value={form.paymentTerms} onChange={handleChange} className={inputCls}>
                 <option value="">Select payment terms</option>
                 {PAYMENT_TERMS.map((t) => <option key={t} value={t}>{t}</option>)}
@@ -832,7 +841,7 @@ export default function NewOrderForm() {
 
           {/* Additional Notes — always visible */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Additional Notes <Optional /></label>
             <textarea
               name="additionalNotes"
               value={form.additionalNotes}
@@ -846,7 +855,7 @@ export default function NewOrderForm() {
 
           {!hideCustomerSection && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Customer Booking</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Customer Booking <Optional /></label>
               <FileUploadButton
                 id="customerBooking"
                 accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
@@ -858,7 +867,7 @@ export default function NewOrderForm() {
 
           {/* Customer PO */}
           {!hideCustomerSection && <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Customer PO</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Customer PO <Optional /></label>
             <FileUploadButton
               id="customerPO"
               accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
@@ -869,7 +878,7 @@ export default function NewOrderForm() {
 
           {/* Pictures */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Pictures</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Pictures <Optional /></label>
             <div className="space-y-2">
               {/* Camera shortcut for mobile */}
               <FileUploadButton
