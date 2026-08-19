@@ -499,7 +499,7 @@ export default function NewOrderForm() {
 
           {/* Logistics Manager */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Logistics Manager <Optional /></label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Logistics Manager <span className="text-red-500">*</span></label>
             <div className="space-y-0.5">
               {LOGISTICS_MEMBERS.map((m) => (
                 <label key={m.email} className={checkRowCls}>
@@ -509,6 +509,7 @@ export default function NewOrderForm() {
                     value={m.email}
                     checked={form.logisticsManager === m.email}
                     onChange={handleChange}
+                    required
                     className="w-5 h-5 text-[#0060A5] accent-[#0060A5] border-gray-300 focus:ring-[#0060A5] flex-shrink-0"
                   />
                   <span className="text-sm text-gray-700">{m.name}</span>
@@ -521,6 +522,7 @@ export default function NewOrderForm() {
                   value="other"
                   checked={form.logisticsManager === "other"}
                   onChange={handleChange}
+                  required
                   className="w-5 h-5 text-[#0060A5] accent-[#0060A5] border-gray-300 focus:ring-[#0060A5] flex-shrink-0"
                 />
                 <span className="text-sm text-gray-700">Other</span>
@@ -534,6 +536,7 @@ export default function NewOrderForm() {
                     onChange={handleChange}
                     placeholder="Full name"
                     autoComplete="off"
+                    required
                     className={inputCls}
                   />
                   <input
@@ -543,6 +546,7 @@ export default function NewOrderForm() {
                     onChange={handleChange}
                     placeholder="Email address"
                     autoComplete="off"
+                    required
                     className={inputCls}
                   />
                 </div>
@@ -683,8 +687,8 @@ export default function NewOrderForm() {
           {/* Purchase Order Shipping Terms — shown once logistics manager selected */}
           {form.logisticsManager && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Order Shipping Terms <Optional /></label>
-              <select name="poShippingTerms" value={form.poShippingTerms} onChange={handleChange} className={inputCls}>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Purchase Order Shipping Terms <span className="text-red-500">*</span></label>
+              <select name="poShippingTerms" value={form.poShippingTerms} onChange={handleChange} required className={inputCls}>
                 <option value="">Select shipping terms</option>
                 {(isDomestic ? SHIPPING_TERMS_DOMESTIC : SHIPPING_TERMS_EXPORT).map((t) => (
                   <option key={t} value={t}>{t}</option>
@@ -799,9 +803,9 @@ export default function NewOrderForm() {
 
           {!hideCustomerSection && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Customer <Optional /></label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Customer <span className="text-red-500">*</span></label>
               <p className="text-xs text-gray-400 mb-1">If no confirmed customer, please share tentative for SI</p>
-              <input type="text" name="customer" value={form.customer} onChange={handleChange} placeholder="Enter customer name" autoCapitalize="words" className={inputCls} />
+              <input type="text" name="customer" value={form.customer} onChange={handleChange} required placeholder="Enter customer name" autoCapitalize="words" className={inputCls} />
             </div>
           )}
 
