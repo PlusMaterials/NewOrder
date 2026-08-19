@@ -308,7 +308,9 @@ async function sendEmail(
   });
 
   await transporter.sendMail({
-    from: `"Plus Materials Orders" <${process.env.EMAIL_USER}>`,
+    // Authenticated as EMAIL_USER, but sent "as" EMAIL_FROM (a verified
+    // "Send mail as" alias in that Gmail account). Falls back to EMAIL_USER.
+    from: `"Plus Materials Orders" <${process.env.EMAIL_FROM || process.env.EMAIL_USER}>`,
     to: Array.from(toSet).join(", "),
     cc: ccList.join(", "),
     subject: `New Order · Tracking #${trackingNumber} — ${fields.vendor || "Unknown Vendor"} · ${fields.department || ""}`,
