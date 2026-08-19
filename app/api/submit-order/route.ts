@@ -197,69 +197,93 @@ function buildEmailHtml(
   fields: Record<string, string>,
   fileLinks: Record<string, string>
 ) {
-  const row = (label: string, value: string) =>
+  // Stacked field: label on its own line, value full-width below — reads well on mobile
+  const field = (label: string, value: string) =>
     value
-      ? `<tr><td style="padding:8px 12px;font-weight:600;color:#374151;white-space:nowrap;vertical-align:top;width:200px">${label}</td><td style="padding:8px 12px;color:#111827">${value}</td></tr>`
+      ? `<tr><td style="padding:10px 20px;border-top:1px solid #f1f5f9">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#64748b;margin-bottom:3px">${label}</div>
+          <div style="font-size:15px;color:#0f172a;line-height:1.45;white-space:pre-wrap">${value}</div>
+        </td></tr>`
       : "";
 
-  const linkRow = (label: string, url: string) =>
+  const linkField = (label: string, url: string) =>
     url
-      ? `<tr><td style="padding:8px 12px;font-weight:600;color:#374151;white-space:nowrap;vertical-align:top;width:200px">${label}</td><td style="padding:8px 12px"><a href="${url}" style="color:#2563eb">View file</a></td></tr>`
+      ? `<tr><td style="padding:10px 20px;border-top:1px solid #f1f5f9">
+          <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#64748b;margin-bottom:5px">${label}</div>
+          <a href="${url}" style="display:inline-block;font-size:14px;font-weight:600;color:#0060A5;text-decoration:none;border:1px solid #0060A5;border-radius:6px;padding:6px 14px">View file</a>
+        </td></tr>`
       : "";
+
+  const sectionHeader = (title: string) =>
+    `<tr><td style="padding:22px 20px 6px">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:#0060A5">${title}</div>
+    </td></tr>`;
+
+  const picturesRow = fileLinks.pictures
+    ? `<tr><td style="padding:10px 20px;border-top:1px solid #f1f5f9">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:#64748b;margin-bottom:6px">Pictures</div>
+        ${fileLinks.pictures.split(", ").map((url, i) => `<a href="${url}" style="display:inline-block;font-size:14px;font-weight:600;color:#0060A5;text-decoration:none;border:1px solid #0060A5;border-radius:6px;padding:6px 14px;margin:0 6px 6px 0">Image ${i + 1}</a>`).join("")}
+      </td></tr>`
+    : "";
 
   return `
 <!DOCTYPE html>
 <html>
-<head><meta charset="utf-8"></head>
-<body style="font-family:Arial,sans-serif;background:#f9fafb;margin:0;padding:24px">
-  <div style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
-    <div style="background:#0077B2;padding:24px 32px">
-      <h1 style="color:#fff;margin:0;font-size:20px">New Order Submission</h1>
-      <p style="color:#bfdbfe;margin:4px 0 0;font-size:13px">Plus Materials — ${new Date().toLocaleString()}</p>
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="font-family:Arial,Helvetica,sans-serif;background:#f5f8fb;margin:0;padding:16px">
+  <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5e7eb">
+    <div style="background:#0060A5;padding:22px 20px">
+      <h1 style="color:#fff;margin:0;font-size:19px">New Order Submission</h1>
+      <p style="color:#cfe4f5;margin:4px 0 0;font-size:13px">Plus Materials — ${new Date().toLocaleString()}</p>
     </div>
-    <div style="background:#eff6ff;padding:12px 32px;border-bottom:1px solid #dbeafe">
-      <p style="margin:0;font-size:14px;color:#1e40af">
+    <div style="background:#eff6ff;padding:12px 20px;border-bottom:1px solid #dbeafe">
+      <p style="margin:0;font-size:15px;color:#0060A5">
         <strong>Tracking #${trackingNumber}</strong> &nbsp;·&nbsp; Order # to be assigned
       </p>
     </div>
-    <div style="padding:24px 32px">
-      <table style="width:100%;border-collapse:collapse;font-size:14px">
-        <tbody>
-          ${row("Buyer", displayName(fields.buyingManager))}
-          ${row("Sales Rep", displayName(fields.salesRepresentative))}
-          ${row("Secondary Acct. Manager", fields.secondaryAccountManagers?.split(", ").map(displayName).join(", ") || "")}
-          ${row("Logistics Manager", fields.logisticsManager === "other"
-            ? `${fields.logisticsManagerOtherName} &lt;${fields.logisticsManagerOtherEmail}&gt;`
-            : displayName(fields.logisticsManager))}
-          ${row("Department", fields.department)}
-          <tr><td colspan="2" style="padding:4px 0"><hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"></td></tr>
-          ${row("Vendor", fields.vendor)}
-          ${row("Vendor Contact Email", fields.vendorContactEmail)}
-          ${row("Place of Loading", fields.placeOfLoading)}
-          ${row("Export Port / Ramp", fields.portRamp)}
-          ${row("Product / Grade", fields.productGrade)}
-          ${row("HS Code", fields.hsCode)}
-          ${row("Purchase Order Items", fields.poItems)}
-          ${row("Pricing", fields.pricing)}
-          ${linkRow("Customer Booking", fileLinks.customerBooking)}
-          ${linkRow("Customer PO", fileLinks.customerPO)}
-          ${row("Min Loading Weight", fields.minimumLoadingWeight)}
-          ${row("Purchase Order Shipping Terms", fields.poShippingTerms)}
-          ${row("Final Destination", fields.finalDestination)}
-          ${row("ICD", fields.icd)}
-          ${row("Container / Load Quantity", fields.containerQuantity)}
-          ${row("Target Ship Date", fields.targetShipDate)}
-          ${row("Customer", fields.customer)}
-          <tr><td colspan="2" style="padding:4px 0"><hr style="border:none;border-top:1px solid #e5e7eb;margin:8px 0"></td></tr>
-          ${row("Sales Order Description", fields.soDescription)}
-          ${row("Sales Order Price", fields.soPrice)}
-          ${row("Sales Order QTY (MT)", fields.soQty)}
-          ${row("Payment Terms", fields.paymentTerms)}
-          ${row("Additional Notes", fields.additionalNotes)}
-          ${fileLinks.pictures ? `<tr><td style="padding:8px 12px;font-weight:600;color:#374151;vertical-align:top">Pictures</td><td style="padding:8px 12px">${fileLinks.pictures.split(", ").map((url, i) => `<a href="${url}" style="color:#2563eb">Image ${i + 1}</a>`).join(" &nbsp; ")}</td></tr>` : ""}
-        </tbody>
-      </table>
-    </div>
+    <table role="presentation" cellpadding="0" cellspacing="0" style="width:100%;border-collapse:collapse">
+      <tbody>
+        ${sectionHeader("Team")}
+        ${field("Buyer", displayName(fields.buyingManager))}
+        ${field("Sales Rep", displayName(fields.salesRepresentative))}
+        ${field("Secondary Acct. Manager", fields.secondaryAccountManagers?.split(", ").map(displayName).join(", ") || "")}
+        ${field("Logistics Manager", fields.logisticsManager === "other"
+          ? `${fields.logisticsManagerOtherName} &lt;${fields.logisticsManagerOtherEmail}&gt;`
+          : displayName(fields.logisticsManager))}
+        ${field("Department", fields.department)}
+
+        ${sectionHeader("Order Details")}
+        ${field("Vendor", fields.vendor)}
+        ${field("Vendor Contact Email", fields.vendorContactEmail)}
+        ${field("Place of Loading", fields.placeOfLoading)}
+        ${field("Export Port / Ramp", fields.portRamp)}
+        ${field("Product / Grade", fields.productGrade)}
+        ${field("HS Code", fields.hsCode)}
+        ${field("Purchase Order Items", fields.poItems)}
+        ${field("Pricing", fields.pricing)}
+        ${field("Min Loading Weight", fields.minimumLoadingWeight)}
+        ${field("Purchase Order Shipping Terms", fields.poShippingTerms)}
+        ${field("Final Destination", fields.finalDestination)}
+        ${field("ICD", fields.icd)}
+        ${field("Container / Load Quantity", fields.containerQuantity)}
+        ${field("Target Ship Date", fields.targetShipDate)}
+        ${field("Customer", fields.customer)}
+
+        ${(fields.soDescription || fields.soPrice || fields.soQty || fields.paymentTerms) ? sectionHeader("Sales Order") : ""}
+        ${field("Sales Order Description", fields.soDescription)}
+        ${field("Sales Order Price", fields.soPrice)}
+        ${field("Sales Order QTY (MT)", fields.soQty)}
+        ${field("Payment Terms", fields.paymentTerms)}
+
+        ${fields.additionalNotes ? sectionHeader("Notes") : ""}
+        ${field("Additional Notes", fields.additionalNotes)}
+
+        ${(fileLinks.customerBooking || fileLinks.customerPO || fileLinks.pictures) ? sectionHeader("Attachments") : ""}
+        ${linkField("Customer Booking", fileLinks.customerBooking)}
+        ${linkField("Customer PO", fileLinks.customerPO)}
+        ${picturesRow}
+      </tbody>
+    </table>
   </div>
 </body>
 </html>`;
